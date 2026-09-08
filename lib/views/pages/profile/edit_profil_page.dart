@@ -1,121 +1,129 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/data/notifier.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_application_2/services/auth_services.dart';
 
 class EditProfilPage extends StatefulWidget {
-  const EditProfilPage({super.key});
+  final String nama;
+  final String bio;
+  final String pekerjaan;
+  const EditProfilPage({
+    super.key,
+    required this.bio,
+    required this.nama,
+    required this.pekerjaan,
+  });
 
   @override
   State<EditProfilPage> createState() => _EditProfilPageState();
 }
 
 class _EditProfilPageState extends State<EditProfilPage> {
-  final TextEditingController namaController = TextEditingController();
-  final TextEditingController pekerjaanController = TextEditingController();
-  final TextEditingController statusController = TextEditingController();
-  final TextEditingController descriptionController = TextEditingController();
+  late TextEditingController namaController = TextEditingController();
+  late TextEditingController pekerjaanController = TextEditingController();
+  late TextEditingController descriptionController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    bacaDataHp();
-  }
-
-  Future<void> simpanDataHP() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('nama', namaController.text);
-    await prefs.setString('pekerjaan', pekerjaanController.text);
-    await prefs.setString('status', statusController.text);
-    await prefs.setString('description', descriptionController.text);
-  }
-
-  Future<void> bacaDataHp() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      namaController.text = prefs.getString('nama') ?? '';
-      pekerjaanController.text = prefs.getString('pekerjaan') ?? '';
-      statusController.text = prefs.getString('status') ?? '';
-      descriptionController.text = prefs.getString('description') ?? '';
-    });
+    namaController = TextEditingController(text: widget.nama);
+    pekerjaanController = TextEditingController(text: widget.pekerjaan);
+    descriptionController = TextEditingController(text: widget.bio);
   }
 
   @override
   void dispose() {
     namaController.dispose();
     pekerjaanController.dispose();
-    statusController.dispose();
     descriptionController.dispose();
     super.dispose();
+  }
+
+  void onSaveProfile() async {
+    String nama = namaController.text.trim();
+    String pekerjaan = pekerjaanController.text.trim();
+    String bio = descriptionController.text.trim();
+
+    if (nama.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Nama tidak boleh kosong.')));
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+    });
+
+    String? error = await authService.value.updateProfile(
+      nama: nama,
+      profession: pekerjaan,
+      bio: bio,
+    );
+    setState(() {
+      _isLoading = false;
+    });
+    if (error == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Teks berhasil di perbarui.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: Colors.red),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: Container(
-          padding: EdgeInsets.all(10),
-          child: CircleAvatar(
-            backgroundImage: AssetImage('assets/images/mentor.png'),
-          ),
-        ),
-      ),
-      body: Card(
-        child: Column(
-          children: [
-            ListTile(
-              leading: Icon(Icons.person),
-              title: TextField(
-                controller: namaController,
-                decoration: InputDecoration(
-                  hintText: 'nama',
-                  border: InputBorder.none,
-                ),
+      appBar: AppBar(title: Text('Edit Profil')),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Card(
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: Icon(Icons.person),
+                    title: TextField(
+                      controller: namaController,
+                      decoration: InputDecoration(
+                        hintText: 'nama',
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.work),
+                    title: TextField(
+                      controller: pekerjaanController,
+                      decoration: InputDecoration(
+                        hintText: 'pekerjaan',
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+
+                  ListTile(
+                    leading: Icon(Icons.description),
+                    title: TextField(
+                      controller: descriptionController,
+                      decoration: InputDecoration(
+                        hintText: 'description',
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: onSaveProfile,
+                    label: Text('simpan Edit'),
+                    icon: Icon(Icons.save),
+                  ),
+                ],
               ),
             ),
-            ListTile(
-              leading: Icon(Icons.work),
-              title: TextField(
-                controller: pekerjaanController,
-                decoration: InputDecoration(
-                  hintText: 'pekerjaan',
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.person),
-              title: TextField(
-                controller: statusController,
-                decoration: InputDecoration(
-                  hintText: 'Status',
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.description),
-              title: TextField(
-                controller: descriptionController,
-                decoration: InputDecoration(
-                  hintText: 'description',
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-            TextButton.icon(
-              onPressed: () async {
-                await simpanDataHP();
-                isProfilChangeNotifier.value = !isProfilChangeNotifier.value;
-                if (context.mounted) {
-                  Navigator.pop(context);
-                }
-              },
-              label: Text('simpan Edit'),
-              icon: Icon(Icons.save),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

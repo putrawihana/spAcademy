@@ -1,9 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_application_2/data/constans.dart';
 import 'package:flutter_application_2/data/notifier.dart';
+import 'package:flutter_application_2/data/user_model.dart';
+import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:flutter_application_2/views/pages/reseaech/baca_research_page.dart';
 import 'package:flutter_application_2/views/pages/upgrade_member_page.dart';
 import 'package:flutter_application_2/views/widgets/container/container_benner.dart';
@@ -29,15 +30,15 @@ class _ResearchPageState extends State<ResearchPage> {
   Future<void> loadAlllike() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      for (int i = 0; i < DaftarResearch.length; i++) {
-        DaftarResearch[i].like = prefs.getInt('like_$i') ?? 0;
+      for (int i = 0; i < daftarResearch.length; i++) {
+        daftarResearch[i].like = prefs.getInt('like_$i') ?? 0;
       }
     });
   }
 
   Future<void> simpanLike(int index) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('like_$index', DaftarResearch[index].like);
+    await prefs.setInt('like_$index', daftarResearch[index].like);
   }
 
   @override
@@ -71,7 +72,24 @@ class _ResearchPageState extends State<ResearchPage> {
                         ),
                       ],
                     ),
-                    VipWidget(),
+                    FutureBuilder(
+                      future: authService.value.getUserDataOnce(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        if (!snapshot.hasData || snapshot.data == null) {
+                          return const Center(
+                            child: Text('Data user tidak ditemuakn.'),
+                          );
+                        }
+                        UserModel user = snapshot.data!;
+                        return VipWidget(user: user);
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -79,9 +97,9 @@ class _ResearchPageState extends State<ResearchPage> {
                 child: ListView.builder(
                   shrinkWrap: true,
                   padding: EdgeInsets.all(16),
-                  itemCount: DaftarResearch.length,
+                  itemCount: daftarResearch.length,
                   itemBuilder: (context, index) {
-                    final research = DaftarResearch[index];
+                    final research = daftarResearch[index];
                     int selisihHari = DateTime.now()
                         .difference(research.tanggal)
                         .inDays;

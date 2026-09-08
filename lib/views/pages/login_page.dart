@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/auth_services.dart';
+import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:flutter_application_2/views/pages/reset_password_page.dart';
 import 'package:flutter_application_2/views/widget_tree.dart';
 import 'package:lottie/lottie.dart';
@@ -27,8 +27,8 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> loginUser() async {
     try {
       await authService.value.signIn(
-        email: controllerEmail.text,
-        password: controllerPw.text,
+        email: controllerEmail.text.trim(),
+        password: controllerPw.text.trim(),
       );
       if (!mounted) return;
       Navigator.pushAndRemoveUntil(

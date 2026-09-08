@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -28,15 +25,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -56,7 +47,6 @@ class DefaultFirebaseOptions {
     projectId: 'spacademy-e3371',
     storageBucket: 'spacademy-e3371.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDcdyQECluSyUoqtACcijt0Qz6nTKqs2hM',
     appId: '1:116177928018:ios:83553be67f639b99c1448b',
@@ -64,5 +54,33 @@ class DefaultFirebaseOptions {
     projectId: 'spacademy-e3371',
     storageBucket: 'spacademy-e3371.firebasestorage.app',
     iosBundleId: 'com.example.flutterApplication2',
+  );
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyDbnLP0VgYQpUNJoO7iv3-A6I3J1ZJjnj4',
+    appId: '1:116177928018:web:454a9bf1dbe0562cc1448b',
+    messagingSenderId: '116177928018',
+    projectId: 'spacademy-e3371',
+    authDomain: 'spacademy-e3371.firebaseapp.com',
+    storageBucket: 'spacademy-e3371.firebasestorage.app',
+    measurementId: 'G-PLCJVGZCZ9',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyDcdyQECluSyUoqtACcijt0Qz6nTKqs2hM',
+    appId: '1:116177928018:ios:83553be67f639b99c1448b',
+    messagingSenderId: '116177928018',
+    projectId: 'spacademy-e3371',
+    storageBucket: 'spacademy-e3371.firebasestorage.app',
+    iosBundleId: 'com.example.flutterApplication2',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyDbnLP0VgYQpUNJoO7iv3-A6I3J1ZJjnj4',
+    appId: '1:116177928018:web:6509ab3b65ab272bc1448b',
+    messagingSenderId: '116177928018',
+    projectId: 'spacademy-e3371',
+    authDomain: 'spacademy-e3371.firebaseapp.com',
+    storageBucket: 'spacademy-e3371.firebasestorage.app',
+    measurementId: 'G-KY0CFKJQNP',
   );
 }

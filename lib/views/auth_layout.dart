@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/auth_services.dart';
+import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:flutter_application_2/views/pages/login_page.dart';
 import 'package:flutter_application_2/views/pages/welcome_page.dart';
 
@@ -12,7 +12,7 @@ class AuthLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: authService,
-      builder: (context, AuthServices, child) {
+      builder: (context, authSErvices, child) {
         return StreamBuilder(
           stream: authService.value.authStateChanges,
           builder: (context, snapshot) {

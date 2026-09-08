@@ -46,7 +46,7 @@ class _BacaResearchPageState extends State<BacaResearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    final research = DaftarResearch[widget.index];
+    final research = daftarResearch[widget.index];
     return Scaffold(
       appBar: AppBar(
         title: Text(research.emiten),

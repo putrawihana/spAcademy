@@ -17,7 +17,7 @@ class ResearchWidget extends StatelessWidget {
           physics: NeverScrollableScrollPhysics(),
           itemCount: 2,
           itemBuilder: (context, index) {
-            final research = DaftarResearch[index];
+            final research = daftarResearch[index];
             return Container(
               margin: EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.all(16),

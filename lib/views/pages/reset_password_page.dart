@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/auth_services.dart';
+import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:lottie/lottie.dart';
 
 class ResetPasswordPage extends StatefulWidget {

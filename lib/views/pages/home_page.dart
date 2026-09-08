@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/data/notifier.dart';
 import 'package:flutter_application_2/data/constans.dart';
+import 'package:flutter_application_2/data/user_model.dart';
+import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:flutter_application_2/views/widgets/chart_widget.dart';
 import 'package:flutter_application_2/views/widgets/container/container_benner.dart';
 import 'package:flutter_application_2/views/widgets/container/container_mentor.dart';
@@ -41,39 +43,46 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ValueListenableBuilder(
-        valueListenable: isDarkNotifier,
-        builder: (context, isDark, child) {
+      body: StreamBuilder(
+        stream: authService.value.getUserDataStream(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          UserModel user = snapshot.data!;
           return SingleChildScrollView(
             physics: ClampingScrollPhysics(),
             child: Column(
               children: [
                 ContainerBenner(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      radius: 20,
-                      backgroundImage: AssetImage('assets/images/mentor.png'),
-                    ),
-                    subtitle: ValueListenableBuilder(
-                      valueListenable: isDarkNotifier,
-                      builder: (context, isDark, child) {
-                        return Text(
-                          namaUser,
+                  child: ValueListenableBuilder(
+                    valueListenable: isDarkNotifier,
+                    builder: (context, isDark, child) {
+                      return ListTile(
+                        leading: CircleAvatar(
+                          radius: 20,
+                          backgroundImage: AssetImage(
+                            'assets/images/mentor.png',
+                          ),
+                        ),
+                        subtitle: Text(
+                          user.nama,
                           style: TextStyle(
                             color: isDark ? Colors.white : Colors.black,
+                            fontWeight: FontWeight.bold,
                           ),
-                        );
-                      },
-                    ),
-                    title: Text(
-                      'Selamat Datang ',
-                      style: TextStyle(
-                        color: isDark ? Colors.amber : Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    trailing: VipWidget(),
+                        ),
+                        title: Text(
+                          'Selamat Datang ',
+                          style: TextStyle(
+                            color: isDark ? Colors.amber : Colors.black,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        trailing: VipWidget(user: user),
+                      );
+                    },
                   ),
                 ),
                 Padding(

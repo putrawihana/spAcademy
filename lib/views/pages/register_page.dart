@@ -1,7 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/auth_services.dart';
-import 'package:flutter_application_2/views/widget_tree.dart';
+import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:flutter_application_2/views/widgets/hero_widget.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -14,7 +12,9 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   TextEditingController controllerEmail = TextEditingController();
   TextEditingController controllerPw = TextEditingController();
+  TextEditingController controllerNama = TextEditingController();
   String pesanError = '';
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -23,21 +23,42 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  Future<void> registerUser() async {
-    try {
-      await authService.value.createAccount(
-        email: controllerEmail.text,
-        password: controllerPw.text,
+  void _handleRegister() async {
+    String nama = controllerNama.text.trim();
+    String email = controllerEmail.text.trim();
+    String password = controllerPw.text.trim();
+
+    if (nama.isEmpty || email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Semua kolom harus diisi!'),
+          backgroundColor: Colors.red,
+        ),
       );
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => WidgetTree()),
-        (route) => false,
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    String? error = await authService.value.register(
+      email: email,
+      password: password,
+      nama: nama,
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (!mounted) return;
+    if (error == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Akun berhasil di buat silahkan login.')),
       );
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        pesanError = e.message ?? 'Something wrong';
-      });
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: Colors.red),
+      );
     }
   }
 
@@ -52,6 +73,19 @@ class _RegisterPageState extends State<RegisterPage> {
           children: [
             HeroWidget(),
             SizedBox(height: 80),
+            TextField(
+              controller: controllerNama,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                hintText: 'nama',
+              ),
+              onEditingComplete: () {
+                setState(() {});
+              },
+            ),
+            SizedBox(height: 15),
             TextField(
               controller: controllerEmail,
               decoration: InputDecoration(
@@ -85,13 +119,24 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             SizedBox(height: 40),
             FilledButton(
-              onPressed: () {
-                registerUser();
-              },
+              onPressed: _isLoading
+                  ? null
+                  : () {
+                      _handleRegister();
+                    },
               style: FilledButton.styleFrom(
                 minimumSize: Size(double.infinity, 40.0),
               ),
-              child: Text('Register'),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text('Register'),
             ),
             SizedBox(height: 80),
           ],

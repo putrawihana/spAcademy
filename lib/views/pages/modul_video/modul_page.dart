@@ -13,7 +13,7 @@ class ModulPage extends StatefulWidget {
 }
 
 class _ModulPageState extends State<ModulPage> {
-  List<isiModul> yangDiTampilin = [];
+  List<IsiModul> yangDiTampilin = [];
 
   @override
   void initState() {

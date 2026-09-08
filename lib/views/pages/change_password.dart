@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/auth_services.dart';
+import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:lottie/lottie.dart';
 
 class ChangePassword extends StatefulWidget {

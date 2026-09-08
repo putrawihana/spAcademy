@@ -10,13 +10,12 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('id_ID', null);
-  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', '');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
-class nonStreach extends MaterialScrollBehavior {
+class NonStreach extends MaterialScrollBehavior {
   @override
   Widget buildOverscrollIndicator(
     BuildContext context,
@@ -53,7 +52,7 @@ class _MyAppState extends State<MyApp> {
       valueListenable: isDarkNotifier,
       builder: (context, isDark, child) {
         return MaterialApp(
-          scrollBehavior: nonStreach(),
+          scrollBehavior: NonStreach(),
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
@@ -61,7 +60,7 @@ class _MyAppState extends State<MyApp> {
               brightness: isDark ? Brightness.dark : Brightness.light,
             ),
           ),
-          title: 'Cobacoba',
+          title: 'spAcademy',
           home: WelcomePage(),
         );
       },

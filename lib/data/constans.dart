@@ -20,14 +20,14 @@ class KTextStyle {
 }
 
 // MODUL VIDEO
-class isiModul {
+class IsiModul {
   final String judul;
   final String level;
   final String? video;
   final String? ringkasan;
   bool isCheck;
 
-  isiModul({
+  IsiModul({
     required this.judul,
     required this.level,
     this.video,
@@ -36,8 +36,8 @@ class isiModul {
   });
 }
 
-final List<isiModul> semuaModul = [
-  isiModul(
+final List<IsiModul> semuaModul = [
+  IsiModul(
     judul: 'Cara menjadi kaya',
     level: 'pemula',
     video: 'assets/videos/2.mov',
@@ -45,9 +45,9 @@ final List<isiModul> semuaModul = [
         'Dasar-Dasar Bursa Efek dan Pasar Modal: Membahas ekosistem pasar keuangan secara menyeluruh, termasuk fungsi utama bursa sebagai wadah bertemunya pihak yang membutuhkan dana dengan para investor.',
     isCheck: false,
   ),
-  isiModul(judul: 'apaaja', level: 'menengah', isCheck: false),
-  isiModul(judul: 'fiauhfua', level: 'lanjutan', isCheck: false),
-  isiModul(
+  IsiModul(judul: 'apaaja', level: 'menengah', isCheck: false),
+  IsiModul(judul: 'fiauhfua', level: 'lanjutan', isCheck: false),
+  IsiModul(
     judul: 'Cara menjadi kaya',
     level: 'menengah',
     video: 'assets/videos/2.mov',
@@ -55,12 +55,12 @@ final List<isiModul> semuaModul = [
         'Dasar-Dasar Bursa Efek dan Pasar Modal: Membahas ekosistem pasar keuangan secara menyeluruh, termasuk fungsi utama bursa sebagai wadah bertemunya pihak yang membutuhkan dana dengan para investor.',
     isCheck: false,
   ),
-  isiModul(judul: 'apaaja', level: 'pemula', isCheck: false),
-  isiModul(judul: 'fiauhfua', level: 'lanjutan', isCheck: false),
+  IsiModul(judul: 'apaaja', level: 'pemula', isCheck: false),
+  IsiModul(judul: 'fiauhfua', level: 'lanjutan', isCheck: false),
 ];
 
 // CONTENT RESEARCH
-class contentResearch {
+class ContentResearch {
   final String gambar;
   final String emiten;
   final DateTime tanggal;
@@ -69,7 +69,7 @@ class contentResearch {
   final String descripsi;
   final String tipker;
 
-  contentResearch({
+  ContentResearch({
     required this.gambar,
     required this.emiten,
     required this.tanggal,
@@ -80,8 +80,8 @@ class contentResearch {
   });
 }
 
-final List<contentResearch> DaftarResearch = [
-  contentResearch(
+final List<ContentResearch> daftarResearch = [
+  ContentResearch(
     tipker: 'BBCA',
     gambar: 'assets/images/bbca.png',
     emiten: 'PT.Bank Central Asia',
@@ -91,7 +91,7 @@ final List<contentResearch> DaftarResearch = [
     descripsi:
         'arus dana aring kembali mencatatkan net buy masih di BBRI setelah rilis kinerja NPL segment mikro yang terbukti....',
   ),
-  contentResearch(
+  ContentResearch(
     tipker: 'BULL',
     gambar: 'assets/images/gambar.png',
     emiten: 'PT.Buana Listiya Lautan',
@@ -101,7 +101,7 @@ final List<contentResearch> DaftarResearch = [
     descripsi:
         'rekap eksekusi swing trade Bull yang berhasill mengunci profil +31%, kini membentuk konsolikdai sehat ....',
   ),
-  contentResearch(
+  ContentResearch(
     tipker: 'BBRI',
     gambar: 'assets/images/ihsg.png',
     emiten: 'PT.Bank Rakyat Indodesia',
