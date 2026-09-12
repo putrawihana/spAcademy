@@ -67,7 +67,7 @@ class ContentResearch {
   final String judul;
   int like;
   final String descripsi;
-  final String tipker;
+  final String ticker;
 
   ContentResearch({
     required this.gambar,
@@ -76,13 +76,13 @@ class ContentResearch {
     required this.judul,
     required this.like,
     required this.descripsi,
-    required this.tipker,
+    required this.ticker,
   });
 }
 
 final List<ContentResearch> daftarResearch = [
   ContentResearch(
-    tipker: 'BBCA',
+    ticker: 'BBCA',
     gambar: 'assets/images/bbca.png',
     emiten: 'PT.Bank Central Asia',
     tanggal: DateTime(2026, 08, 26),
@@ -92,7 +92,7 @@ final List<ContentResearch> daftarResearch = [
         'arus dana aring kembali mencatatkan net buy masih di BBRI setelah rilis kinerja NPL segment mikro yang terbukti....',
   ),
   ContentResearch(
-    tipker: 'BULL',
+    ticker: 'BULL',
     gambar: 'assets/images/gambar.png',
     emiten: 'PT.Buana Listiya Lautan',
     tanggal: DateTime(2026, 04, 26),
@@ -102,7 +102,7 @@ final List<ContentResearch> daftarResearch = [
         'rekap eksekusi swing trade Bull yang berhasill mengunci profil +31%, kini membentuk konsolikdai sehat ....',
   ),
   ContentResearch(
-    tipker: 'BBRI',
+    ticker: 'BBRI',
     gambar: 'assets/images/ihsg.png',
     emiten: 'PT.Bank Rakyat Indodesia',
     tanggal: DateTime(2026, 07, 10),

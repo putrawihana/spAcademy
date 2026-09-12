@@ -1,9 +1,13 @@
 import 'dart:core';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/data/constans.dart';
 import 'package:flutter_application_2/data/notifier.dart';
-import 'package:flutter_application_2/views/pages/modul_video/video_player_page.dart';
+import 'package:flutter_application_2/data/user_model.dart';
+import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:flutter_application_2/views/widgets/container/container_benner.dart';
+import 'package:flutter_application_2/views/widgets/container/container_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ModulPage extends StatefulWidget {
   ModulPage({super.key});
@@ -13,260 +17,470 @@ class ModulPage extends StatefulWidget {
 }
 
 class _ModulPageState extends State<ModulPage> {
-  List<IsiModul> yangDiTampilin = [];
+  String selectedLevel = 'semua';
 
-  @override
-  void initState() {
-    super.initState();
-    yangDiTampilin = semuaModul;
-  }
-
-  void filterModul(String levelPilihan) {
-    setState(() {
-      if (levelPilihan == 'Semua Level') {
-        yangDiTampilin = semuaModul;
-      } else {
-        yangDiTampilin = semuaModul
-            .where(
-              (modul) =>
-                  modul.level.toLowerCase() == levelPilihan.toLowerCase(),
-            )
-            .toList();
+  Future<void> openDriverUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tidak dapat membuka link Google Drive.'),
+          ),
+        );
       }
-    });
+    }
   }
-
-  final List<String> daftarLevel = [
-    'Semua Level',
-    'pemula',
-    'menengah',
-    'lanjutan',
-  ];
-  int indexAktif = 0;
 
   @override
   Widget build(BuildContext context) {
-    int jumlahSelesai = semuaModul.where((m) => m.isCheck).length;
-    int totalModul = semuaModul.length;
-    double progresor = totalModul > 0 ? jumlahSelesai / totalModul : 0.0;
-
     return Scaffold(
       body: ValueListenableBuilder(
         valueListenable: isDarkNotifier,
         builder: (context, isDark, child) {
-          return Column(
-            children: [
-              ContainerBenner(
-                padding: EdgeInsets.all(16.0),
-                child: Column(
-                  spacing: 8,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+          return StreamBuilder<UserModel?>(
+            stream: authService.value.getUserDataStream(),
+            builder: (context, userSnapshot) {
+              final user = userSnapshot.data;
+              final bool isUserVip = user?.isVip ?? false;
+              final bool isAdmin = user?.isAdmin ?? false;
+
+              return StreamBuilder<QuerySnapshot>(
+                stream: authService.value.getModulesStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final allDocs = snapshot.data?.docs ?? [];
+                  final int totalModul = allDocs.length;
+                  final int jumlahSelesai = allDocs
+                      .where((doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        return data['isCompleted'] ?? false;
+                      })
+                      .toList()
+                      .length;
+                  final filteredDocs = allDocs.where((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final level = (data['level'] ?? '')
+                        .toString()
+                        .toLowerCase();
+                    if (selectedLevel == 'semua') return true;
+                    return level == selectedLevel;
+                  }).toList();
+
+                  return Column(
+                    children: [
+                      ContainerBenner(
+                        padding: EdgeInsets.all(16.0),
+                        child: Column(
+                          spacing: 8,
                           children: [
-                            Text(
-                              'Modul Kelas Saham',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Modul Kelas Saham',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Kurikulum terstruktur oleh mentor',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  padding: EdgeInsets.all(3),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Color(0xFF10B981),
+                                      width: 2,
+                                    ),
+                                    color: isDark
+                                        ? Color.fromARGB(255, 10, 82, 58)
+                                        : Color.fromARGB(255, 200, 228, 218),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Row(
+                                    spacing: 5,
+                                    children: [
+                                      Text(
+                                        '$jumlahSelesai/$totalModul',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF10B981),
+                                        ),
+                                      ),
+                                      Text(
+                                        'Selesai',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF10B981),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 4),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Progres Belajar Anda'),
+                                Text(
+                                  '${((jumlahSelesai / totalModul) * 100).toStringAsFixed(0)}%',
+                                ),
+                              ],
+                            ),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: LinearProgressIndicator(
+                                value: totalModul == 0
+                                    ? 0.0
+                                    : (jumlahSelesai / totalModul),
+                                minHeight: 8,
+                                backgroundColor: isDark
+                                    ? Colors.white12
+                                    : Colors.black26,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.greenAccent,
+                                ),
                               ),
                             ),
-                            Text(
-                              'Kurikulum terstruktur oleh mentor',
-                              style: TextStyle(fontSize: 14),
+                            SizedBox(height: 10),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Row(
+                                children: [
+                                  _buildFilterChip('semua', 'semua'),
+                                  _buildFilterChip('pemula', 'pemula'),
+                                  _buildFilterChip('menegah', 'menegah'),
+                                  _buildFilterChip('lanjutan', 'lanjutan'),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-                        Container(
-                          padding: EdgeInsets.all(3),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Color(0xFFF10B981),
-                              width: 2,
-                            ),
-                            color: isDark
-                                ? Color.fromARGB(255, 10, 82, 58)
-                                : Color.fromARGB(255, 200, 228, 218),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            spacing: 5,
-                            children: [
-                              Text(
-                                '$jumlahSelesai/$totalModul',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFF10B981),
-                                ),
-                              ),
-                              Text(
-                                'Selesai',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFF10B981),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Progres Belajar Anda'),
-                        Text('${(progresor * 100).toStringAsFixed(0)}%'),
-                      ],
-                    ),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: TweenAnimationBuilder<double>(
-                        duration: const Duration(milliseconds: 500),
-                        tween: Tween<double>(begin: 0.0, end: progresor),
-                        builder: (context, animatedValue, child) {
-                          return LinearProgressIndicator(
-                            value: animatedValue,
-                            minHeight: 8,
-                            backgroundColor: isDark
-                                ? Colors.white12
-                                : Colors.black26,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.greenAccent,
-                            ),
-                          );
-                        },
                       ),
-                    ),
-                    SizedBox(height: 10),
-                    SizedBox(
-                      height: 48,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: daftarLevel.length,
-                        itemBuilder: (context, index) {
-                          final apakahAktif = index == indexAktif;
-                          return Padding(
-                            padding: EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              label: Text(daftarLevel[index]),
-                              selected: apakahAktif,
-                              selectedColor: Colors.greenAccent.shade700,
-                              backgroundColor: isDark
-                                  ? Color(0xFF1E293B)
-                                  : Colors.white,
-                              labelStyle: TextStyle(
-                                color: apakahAktif
-                                    ? Colors.white
-                                    : Color(0xFFF10B981),
-                                fontWeight: FontWeight.bold,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              onSelected: (value) {
-                                setState(() {
-                                  indexAktif = index;
-                                });
-                                filterModul(daftarLevel[index]);
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  padding: EdgeInsets.all(16),
-                  itemCount: yangDiTampilin.length,
-                  itemBuilder: (context, index) {
-                    final modul = yangDiTampilin[index];
-                    return Container(
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: isDark ? Colors.white : Colors.grey,
-                            blurRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: GestureDetector(
-                        onTap: () {
-                          final String pathVideoPilihan =
-                              modul.video ?? 'assets/videos/1.mp4';
-                          final String judulVideoPilihan = modul.judul;
-                          final String levelVideoPilihan = modul.level;
-                          final String ringkasanVideoPilihan =
-                              modul.ringkasan ?? '';
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return VideoPlayerPage(
-                                  videoPath: pathVideoPilihan,
-                                  judul: judulVideoPilihan,
-                                  level: levelVideoPilihan,
-                                  ringakasan: ringkasanVideoPilihan,
-                                );
-                              },
-                            ),
-                          );
-                        },
-                        child: Column(
-                          children: [
-                            ListTile(
-                              leading: Container(
-                                height: 50,
-                                width: 50,
-                                decoration: BoxDecoration(
-                                  color: Colors.amber,
-                                  borderRadius: BorderRadius.circular(10),
+                      Expanded(
+                        child: filteredDocs.isEmpty
+                            ? Center(
+                                child: Text(
+                                  'Belum ada modul untuk level ini.',
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black,
+                                  ),
                                 ),
-                                child: Icon(Icons.play_arrow),
-                              ),
-                              title: Text(
-                                modul.judul,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
+                              )
+                            : ListView.builder(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
                                 ),
-                              ),
-                              subtitle: Text(
-                                'Level: ${modul.level}',
-                                style: KTextStyle.descripsiText,
-                              ),
-                              trailing: Checkbox.adaptive(
-                                value: modul.isCheck,
-                                onChanged: (bool? nilaibaru) {
-                                  setState(() {
-                                    modul.isCheck = nilaibaru ?? true;
-                                  });
+                                itemCount: filteredDocs.length,
+                                itemBuilder: (context, index) {
+                                  final doc = filteredDocs[index];
+                                  final data =
+                                      doc.data() as Map<String, dynamic>;
+                                  final String judul = data['judul'] ?? "Modul";
+                                  final String level =
+                                      data['level'] ?? 'pemula';
+                                  final String videoUrl =
+                                      data['videoUrl'] ?? '';
+                                  final bool isVipOnly =
+                                      data['isVipOnly'] ?? false;
+                                  final bool isLocked =
+                                      isVipOnly && !isUserVip && !isAdmin;
+                                  final bool isCompleted =
+                                      data['isCompleted'] ?? false;
+
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 12),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? const Color(0xFF1E293B)
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(14),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey,
+                                          blurRadius: 2,
+                                        ),
+                                      ],
+                                    ),
+                                    child: ContainerWidget(
+                                      onTap: () {
+                                        if (isLocked) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Modul ini khusus member VIP! Hubungi admin untuk upgrade.',
+                                              ),
+                                              backgroundColor: Colors.amber,
+                                            ),
+                                          );
+                                        } else if (videoUrl.isNotEmpty) {
+                                          openDriverUrl(videoUrl);
+                                        } else {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Link video belum tersedia.',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Container(
+                                            child: Row(
+                                              spacing: 10,
+                                              children: [
+                                                Container(
+                                                  height: 50,
+                                                  width: 50,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.amber,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          10,
+                                                        ),
+                                                  ),
+                                                  child: Icon(
+                                                    isLocked
+                                                        ? Icons.lock
+                                                        : Icons.play_arrow,
+                                                    color: Colors.white,
+                                                    size: 26,
+                                                  ),
+                                                ),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Text(
+                                                          judul,
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: Colors.black,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 10,
+                                                        ),
+                                                        if (isVipOnly)
+                                                          Container(
+                                                            padding:
+                                                                const EdgeInsets.symmetric(
+                                                                  horizontal: 6,
+                                                                  vertical: 2,
+                                                                ),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                                  color: Colors
+                                                                      .amber
+                                                                      .shade700,
+                                                                  borderRadius:
+                                                                      BorderRadius.circular(
+                                                                        4,
+                                                                      ),
+                                                                ),
+                                                            child: const Text(
+                                                              'VIP',
+                                                              style: TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontSize: 10,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                      ],
+                                                    ),
+                                                    Text(
+                                                      level.toUpperCase(),
+                                                      style: KTextStyle
+                                                          .descripsiText,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              if (isAdmin)
+                                                IconButton(
+                                                  icon: const Icon(
+                                                    Icons
+                                                        .delete_forever_outlined,
+                                                    color: Colors.red,
+                                                  ),
+                                                  onPressed: () =>
+                                                      _comformingDelete(
+                                                        doc.id,
+                                                        judul,
+                                                      ),
+                                                ),
+                                              if (isUserVip)
+                                                Checkbox(
+                                                  value: isCompleted,
+                                                  onChanged: (bool? value) async {
+                                                    await authService.value
+                                                        .updateModuleCompletion(
+                                                          doc.id,
+                                                          value ?? false,
+                                                        );
+                                                  },
+                                                ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
                                 },
                               ),
-                            ),
-                          ],
-                        ),
                       ),
-                    );
-                  },
-                ),
-              ),
-            ],
+                    ],
+                  );
+                },
+              );
+            },
           );
         },
       ),
     );
   }
+
+  Widget _buildFilterChip(String levelKey, String label) {
+    final bool isSelected = selectedLevel == levelKey;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: isSelected,
+        selectedColor: Colors.teal,
+        disabledColor: Colors.amber,
+        labelStyle: TextStyle(
+          color: isSelected ? Colors.white : Colors.black,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+        onSelected: (selected) {
+          if (selected) {
+            setState(() {
+              selectedLevel = levelKey;
+            });
+          }
+        },
+      ),
+    );
+  }
+
+  void _comformingDelete(String docId, String judul) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus Modul?'),
+        content: Text('Apakaha Anda yaking ingin menghapus "$judul"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await authService.value.deleteModule(docId);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Modul berhasil dihapus')),
+                );
+              }
+            },
+            child: const Text('Hapus', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+
+
+// ListTile(
+//                                       contentPadding: const EdgeInsets.all(10),
+//                                       leading: Container(
+//                                         padding: const EdgeInsets.all(10),
+//                                         decoration: BoxDecoration(
+//                                           color: Colors.teal,
+//                                           borderRadius: BorderRadius.circular(
+//                                             10,
+//                                           ),
+//                                         ),
+//                                         child: 
+//                                       ),
+//                                       title: Row(
+//                                         children: [
+//                                           Expanded(
+//                                             child: Text(
+//                                               judul,
+//                                               style: TextStyle(
+//                                                 fontWeight: FontWeight.bold,
+//                                                 fontSize: 15,
+//                                                 color: isDark
+//                                                     ? Colors.white
+//                                                     : Colors.black,
+//                                               ),
+//                                             ),
+//                                           ),
+//                                           
+//                                         ],
+//                                       ),
+//                                       subtitle: Column(
+//                                         children: [
+//                                           const SizedBox(height: 4),
+//                                           Text(
+//                                             'Level: ${level.toUpperCase()} $ringkasan',
+//                                             maxLines: 2,
+//                                             overflow: TextOverflow.ellipsis,
+//                                             style: TextStyle(
+//                                               color: isDark
+//                                                   ? Colors.grey.shade400
+//                                                   : Colors.grey.shade600,
+//                                               fontSize: 12,
+//                                             ),
+//                                           ),
+//                                         ],
+//                                       ),
+//                                       trailing: 
+//                                       onTap: () {
+//                                         
+//                                       },
+//                                     ),

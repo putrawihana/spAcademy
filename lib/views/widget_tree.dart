@@ -3,7 +3,7 @@ import 'package:flutter_application_2/data/notifier.dart';
 import 'package:flutter_application_2/views/pages/home_page.dart';
 import 'package:flutter_application_2/views/pages/modul_video/modul_page.dart';
 import 'package:flutter_application_2/views/pages/profile/profil_page.dart';
-import 'package:flutter_application_2/views/pages/reseaech/research_page.dart';
+import 'package:flutter_application_2/views/pages/reseach/research_page.dart';
 
 import 'widgets/navbar_widget.dart';
 

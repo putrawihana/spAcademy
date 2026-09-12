@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/data/user_model.dart';
 
@@ -29,6 +30,7 @@ class AuthServices {
         'nama': nama,
         'email': email,
         'isVip': false,
+        'role': 'member',
         'profession': 'Trader',
         'bio': 'Member Baru SP Academy',
         'createdAt': FieldValue.serverTimestamp(),
@@ -168,5 +170,96 @@ class AuthServices {
     if (uid != null) {
       await _firestore.collection('users').doc(uid).update({'isVip': true});
     }
+  }
+
+  Future<String?> uploadResearch({
+    required String judul,
+    required String ticker,
+    required String emiten,
+    required String descripsi,
+    required bool isVipOnly,
+    String? imageUrl,
+    String? takeProfit,
+    String? entryPoint,
+    String? stopLoss,
+  }) async {
+    try {
+      await _firestore.collection('researches').add({
+        'judul': judul,
+        'ticker': ticker.toUpperCase(),
+        'emiten': emiten,
+        'descripsi': descripsi,
+        'imageUrl': imageUrl ?? '',
+        'takeProfit': takeProfit ?? '',
+        'entryPoint': entryPoint ?? '',
+        'stopLoss': stopLoss ?? '',
+        'isVipOnly': isVipOnly,
+        'tanggal': FieldValue.serverTimestamp(),
+      });
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Future<String?> uploadModul({
+    required String judul,
+    required String level,
+    required String videoUrl,
+    required bool isVipOnly,
+  }) async {
+    try {
+      await _firestore.collection('modules').add({
+        'judul': judul,
+        'level': level,
+        'videoUrl': videoUrl.trim(),
+        'isVipOnly': isVipOnly,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Stream<List<UserModel>> getAllUsersStream() {
+    return _firestore.collection('users').snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
+    });
+  }
+
+  Future<void> setUserVipStatus(String uid, bool isVip) async {
+    await _firestore.collection('users').doc(uid).update({'isVip': isVip});
+  }
+
+  Stream<QuerySnapshot> getResearchesStream() {
+    return _firestore
+        .collection('researches')
+        .orderBy('tanggal', descending: true)
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getModulesStream({String? level}) {
+    Query query = _firestore
+        .collection('modules')
+        .orderBy('createdAt', descending: true);
+    if (level != null && level.isNotEmpty) {
+      query = query.where('level', isEqualTo: level);
+    }
+    return query.snapshots();
+  }
+
+  Future<void> updateModuleCompletion(String docId, bool isComplated) async {
+    try {
+      await _firestore.collection('modules').doc(docId).update({
+        'isCompleted': isComplated,
+      });
+    } catch (e) {
+      print('Gagal memperbarui status modul $e');
+    }
+  }
+
+  Future<void> deleteModule(String docId) async {
+    await _firestore.collection('modules').doc(docId).delete();
   }
 }

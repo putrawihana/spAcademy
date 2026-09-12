@@ -1,10 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/data/constans.dart';
 import 'package:flutter_application_2/views/widgets/container/container_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class ContainerMentor extends StatelessWidget {
+class ContainerMentor extends StatefulWidget {
   const ContainerMentor({super.key, this.teksJoin});
   final String? teksJoin;
+
+  @override
+  State<ContainerMentor> createState() => _ContainerMentorState();
+}
+
+class _ContainerMentorState extends State<ContainerMentor> {
+  Future<void> openLink(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tidak dapat membuka link Google Drive.'),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +80,7 @@ class ContainerMentor extends StatelessWidget {
               ),
             ],
           ),
-          if (teksJoin != null) ...[
+          if (widget.teksJoin != null) ...[
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
               child: Divider(thickness: 1),
@@ -69,8 +88,16 @@ class ContainerMentor extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(teksJoin!, style: const TextStyle(color: Colors.black54)),
+                Text(
+                  widget.teksJoin!,
+                  style: const TextStyle(color: Colors.black54),
+                ),
                 GestureDetector(
+                  onTap: () {
+                    openLink(
+                      'https://chat.whatsapp.com/DgObgDcfudcBNdfHV8w2oV?mode=gi_t',
+                    );
+                  },
                   child: Container(
                     padding: EdgeInsets.all(1),
                     width: 80,

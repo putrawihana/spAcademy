@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_2/data/notifier.dart';
 import 'package:flutter_application_2/data/user_model.dart';
 import 'package:flutter_application_2/services/auth_services.dart';
+import 'package:flutter_application_2/views/pages/admin_page.dart';
 import 'package:flutter_application_2/views/pages/profile/edit_profil_page.dart';
 import 'package:flutter_application_2/views/pages/setting_page.dart';
 import 'package:flutter_application_2/views/pages/welcome_page.dart';
@@ -147,6 +148,40 @@ class _ProfilPageState extends State<ProfilPage> {
                           ),
                         ],
                       ),
+                      if (user.isAdmin) ...[
+                        const SizedBox(height: 12),
+                        ListTile(
+                          tileColor: Colors.amber,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadiusGeometry.circular(12),
+                          ),
+                          leading: const Icon(
+                            Icons.admin_panel_settings,
+                            color: Colors.orange,
+                          ),
+                          title: const Text(
+                            'Panel Admin SP Academy',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                            ),
+                          ),
+                          trailing: const Icon(
+                            Icons.arrow_forward_ios,
+                            size: 16,
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return AdminPage();
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                       SizedBox(height: 20),
                       Card(
                         child: Column(

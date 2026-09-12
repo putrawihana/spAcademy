@@ -9,7 +9,6 @@ import 'package:flutter_application_2/views/widgets/container/container_mentor.d
 import 'package:flutter_application_2/views/widgets/container/container_widget.dart';
 import 'package:flutter_application_2/views/widgets/research_widget.dart';
 import 'package:flutter_application_2/views/widgets/vip_widget.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,27 +18,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool tampilkanResearch = false;
-  String namaUser = "";
-
-  @override
-  void initState() {
-    super.initState();
-    muatDataUser();
-    isProfilChangeNotifier.addListener(() {
-      if (mounted) {
-        muatDataUser();
-      }
-    });
-  }
-
-  Future<void> muatDataUser() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      namaUser = prefs.getString('nama') ?? '';
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,7 +68,7 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ContainerMentor(teksJoin: 'Gabung Group Telegram VIP'),
+                      ContainerMentor(teksJoin: 'Diskusi lengkap di Group WA'),
                       SizedBox(height: 20),
                       ChartWidget(),
                       SizedBox(height: 20),
@@ -162,7 +140,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ],
                       ),
-                      ResearchWidget(),
+                      ResearchWidget(jumlahResearch: 1),
                     ],
                   ),
                 ),

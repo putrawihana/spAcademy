@@ -5,6 +5,7 @@ class UserModel {
   final String nama;
   final String email;
   final bool isVip;
+  final String role;
   final String profession;
   final String bio;
 
@@ -13,9 +14,12 @@ class UserModel {
     required this.nama,
     required this.email,
     required this.isVip,
+    required this.role,
     required this.profession,
     required this.bio,
   });
+
+  bool get isAdmin => role.toLowerCase() == 'admin';
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>? ?? {};
@@ -24,6 +28,7 @@ class UserModel {
       nama: data['nama'] ?? '',
       email: data['email'] ?? '',
       isVip: data['isVip'] ?? false,
+      role: data['role'] ?? 'member',
       profession: data['profession'] ?? 'Trader',
       bio: data['bio'] ?? 'Member SP Academy',
     );
@@ -35,6 +40,7 @@ class UserModel {
       'nama': nama,
       'email': email,
       'isVip': isVip,
+      'role': role,
       'profession': profession,
       'bio': bio,
     };

@@ -17,9 +17,9 @@ class EditProfilPage extends StatefulWidget {
 }
 
 class _EditProfilPageState extends State<EditProfilPage> {
-  late TextEditingController namaController = TextEditingController();
-  late TextEditingController pekerjaanController = TextEditingController();
-  late TextEditingController descriptionController = TextEditingController();
+  late TextEditingController namaController;
+  late TextEditingController pekerjaanController;
+  late TextEditingController descriptionController;
   bool _isLoading = false;
 
   @override
@@ -61,6 +61,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
     setState(() {
       _isLoading = false;
     });
+    if (!mounted) return;
+
     if (error == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
