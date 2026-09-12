@@ -22,6 +22,7 @@ class _BacaResearchPageState extends State<BacaResearchPage> {
     final String takeProfit = data['takeProfit'] ?? '';
     final String entryPoint = data['entryPoint'] ?? '';
     final String stopLoss = data['stopLoss'] ?? '';
+    final List<String> paragrafList = deskripsi.split('\n');
     DateTime tanggal = DateTime.now();
     if (data['tanggal'] != null && data['tanggal'] is Timestamp) {
       tanggal = (data['tanggal'] as Timestamp).toDate();
@@ -47,7 +48,7 @@ class _BacaResearchPageState extends State<BacaResearchPage> {
                   ),
                   Text(judul),
                   SizedBox(height: 15),
-                  if (imageUrl != null && imageUrl.isNotEmpty)
+                  if (imageUrl.isNotEmpty)
                     Container(
                       width: double.infinity,
                       height: 200,
@@ -171,7 +172,18 @@ class _BacaResearchPageState extends State<BacaResearchPage> {
                       ),
                     ),
                   Text('Tesis Investatasi & Rationale'),
-                  Text(deskripsi),
+                  ...paragrafList.map((paragraf) {
+                    if (paragraf.trim().isEmpty) {
+                      return const SizedBox(height: 10);
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        paragraf,
+                        style: const TextStyle(fontSize: 14, height: 1.5),
+                      ),
+                    );
+                  }),
                 ],
               ),
             ),

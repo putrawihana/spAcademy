@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/data/notifier.dart';
-import 'package:flutter_application_2/data/constans.dart';
 import 'package:flutter_application_2/data/user_model.dart';
 import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:flutter_application_2/views/widgets/chart_widget.dart';
 import 'package:flutter_application_2/views/widgets/container/container_benner.dart';
 import 'package:flutter_application_2/views/widgets/container/container_mentor.dart';
-import 'package:flutter_application_2/views/widgets/container/container_widget.dart';
+import 'package:flutter_application_2/views/widgets/modul_widget.dart';
 import 'package:flutter_application_2/views/widgets/research_widget.dart';
 import 'package:flutter_application_2/views/widgets/vip_widget.dart';
 
@@ -79,41 +78,7 @@ class _HomePageState extends State<HomePage> {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
-                      ContainerWidget(
-                        onTap: () {
-                          selectedPageNotifier.value = 1;
-                        },
-                        child: Row(
-                          children: [
-                            Container(
-                              height: 50,
-                              width: 50,
-                              decoration: BoxDecoration(
-                                color: Colors.amber,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(Icons.play_arrow),
-                            ),
-                            SizedBox(width: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'tutorial Membuka Rekening Saham',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                Text(
-                                  'Level 1',
-                                  style: KTextStyle.descripsiText,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                      ModulWidget(benner: false, jumlahTampilan: 1),
                       SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -140,7 +105,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ],
                       ),
-                      ResearchWidget(jumlahResearch: 1),
+                      ResearchWidget(jumlahResearch: 1, searchBar: false),
                     ],
                   ),
                 ),

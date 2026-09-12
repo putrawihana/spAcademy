@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/views/widgets/research_widget.dart';
 
@@ -37,11 +39,13 @@ class _ResearchPageState extends State<ResearchPage> {
               ],
             ),
           ),
+
+          const SizedBox(height: 20),
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.all(16),
-                child: ResearchWidget(),
+                child: ResearchWidget(searchBar: true),
               ),
             ),
           ),

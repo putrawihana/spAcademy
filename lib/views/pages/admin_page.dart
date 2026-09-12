@@ -120,6 +120,8 @@ class _AdminPageState extends State<AdminPage>
               const SizedBox(height: 12),
               TextField(
                 controller: descCtrl,
+                maxLines: null,
+                keyboardType: TextInputType.multiline,
                 decoration: const InputDecoration(
                   labelText: 'Isi Analisis / Riset',
                 ),
