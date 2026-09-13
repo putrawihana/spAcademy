@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:flutter_application_2/views/pages/reset_password_page.dart';
@@ -15,32 +14,37 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   TextEditingController controllerEmail = TextEditingController();
   TextEditingController controllerPw = TextEditingController();
+  final FocusNode passwordFocusNode = FocusNode();
   String pesanError = '';
 
   @override
   void dispose() {
     controllerEmail.dispose();
     controllerPw.dispose();
+    passwordFocusNode.dispose();
     super.dispose();
   }
 
   Future<void> loginUser() async {
-    try {
-      await authService.value.signIn(
-        email: controllerEmail.text.trim(),
-        password: controllerPw.text.trim(),
-      );
-      if (!mounted) return;
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => WidgetTree()),
-        (route) => false,
-      );
-    } on FirebaseAuthException catch (e) {
+    String? error = await authService.value.signIn(
+      email: controllerEmail.text.trim(),
+      password: controllerPw.text.trim(),
+    );
+    if (!mounted) return;
+    if (error != null) {
       setState(() {
-        pesanError = e.message ?? 'Something wrong';
+        pesanError = error;
+        controllerEmail.clear();
+        controllerPw.clear();
       });
+      FocusScope.of(context).unfocus();
+      return;
     }
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => WidgetTree()),
+      (route) => false,
+    );
   }
 
   void resetPassword() {
@@ -78,6 +82,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 hintText: 'Email',
               ),
+              onSubmitted: (_) {
+                FocusScope.of(context).requestFocus(passwordFocusNode);
+              },
               onEditingComplete: () {
                 setState(() {});
               },
@@ -92,6 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 hintText: 'Password',
               ),
+              focusNode: passwordFocusNode,
               onEditingComplete: () {
                 setState(() {});
               },

@@ -11,8 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ModulWidget extends StatefulWidget {
   final int? jumlahTampilan;
-  final bool
-  benner; // true = dipakai sendiri di ModulPage, false = ditempel di HomePage
+  final bool benner;
   const ModulWidget({super.key, this.jumlahTampilan, this.benner = true});
 
   @override
@@ -404,9 +403,9 @@ class _ModulWidgetState extends State<ModulWidget> {
         label: Text(label),
         selected: isSelected,
         selectedColor: Colors.teal,
-        disabledColor: Colors.amber,
+        backgroundColor: Colors.grey.shade400,
         labelStyle: TextStyle(
-          color: isSelected ? Colors.white : Colors.black,
+          color: isSelected ? Colors.white : Colors.grey.shade600,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
         onSelected: (selected) {
