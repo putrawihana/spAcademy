@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_2/data/notifier.dart';
 import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:flutter_application_2/views/pages/reseach/baca_research_page.dart';
+import 'package:flutter_application_2/views/pages/upgrade_member_page.dart';
 import 'package:intl/intl.dart';
 
 class ResearchWidget extends StatefulWidget {
@@ -215,16 +216,31 @@ class _ResearchWidgetState extends State<ResearchWidget> {
                                         ),
                                       ),
                                       GestureDetector(
-                                        onTap: () {
+                                        onTap: () async {
                                           if (isLocked) {
                                             ScaffoldMessenger.of(
                                               context,
                                             ).showSnackBar(
                                               const SnackBar(
                                                 content: Text(
-                                                  'Modul ini khusus member VIP! Hubungi admin untuk upgrade.',
+                                                  'Modul ini khusus member VIP!',
                                                 ),
                                                 backgroundColor: Colors.amber,
+                                                duration: const Duration(
+                                                  milliseconds: 1000,
+                                                ),
+                                              ),
+                                            );
+                                            await Future.delayed(
+                                              const Duration(seconds: 2),
+                                            );
+                                            if (!context.mounted) return;
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) {
+                                                  return UpgradeMemberPage();
+                                                },
                                               ),
                                             );
                                           } else {

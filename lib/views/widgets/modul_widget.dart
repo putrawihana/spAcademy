@@ -4,6 +4,7 @@ import 'package:flutter_application_2/data/constans.dart';
 import 'package:flutter_application_2/data/notifier.dart';
 import 'package:flutter_application_2/data/user_model.dart';
 import 'package:flutter_application_2/services/auth_services.dart';
+import 'package:flutter_application_2/views/pages/upgrade_member_page.dart';
 import 'package:flutter_application_2/views/widgets/container/container_benner.dart';
 import 'package:flutter_application_2/views/widgets/container/container_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -119,14 +120,26 @@ class _ModulWidgetState extends State<ModulWidget> {
                               ],
                             ),
                             child: ContainerWidget(
-                              onTap: () {
+                              onTap: () async {
                                 if (isLocked) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
-                                        'Modul ini khusus member VIP! Hubungi admin untuk upgrade.',
+                                        'Modul ini khusus member VIP!',
                                       ),
                                       backgroundColor: Colors.amber,
+                                    ),
+                                  );
+                                  await Future.delayed(
+                                    const Duration(seconds: 2),
+                                  );
+                                  if (!context.mounted) return;
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) {
+                                        return UpgradeMemberPage();
+                                      },
                                     ),
                                   );
                                 } else if (videoUrl.isNotEmpty) {
