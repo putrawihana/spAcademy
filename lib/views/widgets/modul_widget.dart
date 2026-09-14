@@ -105,7 +105,7 @@ class _ModulWidgetState extends State<ModulWidget> {
                           final bool isVipOnly = data['isVipOnly'] ?? false;
                           final bool isLocked =
                               isVipOnly && !isUserVip && !isAdmin;
-                          final bool isCompleted = data['isCompleted'] ?? false;
+                          bool isCompleted = data['isCompleted'] ?? false;
 
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),

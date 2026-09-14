@@ -59,73 +59,106 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Container(
-              width: double.infinity,
-              height: 300,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Lottie.asset('assets/lotties/splebihbaru.json'),
-            ),
-            TextField(
-              controller: controllerEmail,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            FocusScope.of(context).unfocus();
+            Future.delayed(const Duration(milliseconds: 100), () {
+              if (mounted) {
+                Navigator.pop(context);
+              }
+            });
+          },
+          icon: Icon(Icons.arrow_back),
+        ),
+      ),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20.0),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        height: 150,
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Lottie.asset('assets/lotties/splebihbaru.json'),
+                      ),
+                      TextField(
+                        controller: controllerEmail,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          hintText: 'Email',
+                        ),
+                        textInputAction: TextInputAction.next,
+                        onSubmitted: (_) {
+                          FocusScope.of(
+                            context,
+                          ).requestFocus(passwordFocusNode);
+                        },
+                        onEditingComplete: () {
+                          setState(() {});
+                        },
+                      ),
+                      SizedBox(height: 15),
+                      TextField(
+                        controller: controllerPw,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          hintText: 'Password',
+                        ),
+                        textInputAction: TextInputAction.done,
+                        focusNode: passwordFocusNode,
+                        onSubmitted: (value) {
+                          loginUser();
+                        },
+                        onEditingComplete: () {
+                          setState(() {});
+                        },
+                      ),
+                      if (pesanError.isNotEmpty)
+                        Padding(
+                          padding: EdgeInsets.only(top: 8),
+                          child: Text(
+                            pesanError,
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      SizedBox(height: 40),
+                      FilledButton(
+                        onPressed: () {
+                          loginUser();
+                        },
+                        style: FilledButton.styleFrom(
+                          minimumSize: Size(double.infinity, 40.0),
+                        ),
+                        child: Text('login'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          resetPassword();
+                        },
+                        child: Text('reset password'),
+                      ),
+                    ],
+                  ),
                 ),
-                hintText: 'Email',
               ),
-              onSubmitted: (_) {
-                FocusScope.of(context).requestFocus(passwordFocusNode);
-              },
-              onEditingComplete: () {
-                setState(() {});
-              },
-            ),
-            SizedBox(height: 15),
-            TextField(
-              controller: controllerPw,
-              obscureText: true,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                hintText: 'Password',
-              ),
-              focusNode: passwordFocusNode,
-              onEditingComplete: () {
-                setState(() {});
-              },
-            ),
-            if (pesanError.isNotEmpty)
-              Padding(
-                padding: EdgeInsets.only(top: 8),
-                child: Text(pesanError, style: TextStyle(color: Colors.red)),
-              ),
-            SizedBox(height: 40),
-            FilledButton(
-              onPressed: () {
-                loginUser();
-              },
-              style: FilledButton.styleFrom(
-                minimumSize: Size(double.infinity, 40.0),
-              ),
-              child: Text('login'),
-            ),
-            TextButton(
-              onPressed: () {
-                resetPassword();
-              },
-              child: Text('reset password'),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );

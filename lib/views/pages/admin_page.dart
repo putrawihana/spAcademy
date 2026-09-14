@@ -235,7 +235,7 @@ class _AdminPageState extends State<AdminPage>
                 decoration: const InputDecoration(labelText: 'Level Modul'),
                 items: const [
                   DropdownMenuItem(value: 'pemula', child: Text('Pemula')),
-                  DropdownMenuItem(value: 'menegah', child: Text('Mengah')),
+                  DropdownMenuItem(value: 'menengah', child: Text('Menengah')),
                   DropdownMenuItem(value: 'lanjutan', child: Text('Lanjutan')),
                 ],
                 onChanged: (value) => setTabState(() => level = value!),

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/data/notifier.dart';
-import 'package:flutter_application_2/data/user_model.dart';
 import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:flutter_application_2/views/widgets/chart_widget.dart';
 import 'package:flutter_application_2/views/widgets/container/container_benner.dart';
 import 'package:flutter_application_2/views/widgets/container/container_mentor.dart';
+import 'package:flutter_application_2/views/widgets/hero_widget.dart';
 import 'package:flutter_application_2/views/widgets/modul_widget.dart';
 import 'package:flutter_application_2/views/widgets/research_widget.dart';
 import 'package:flutter_application_2/views/widgets/vip_widget.dart';
@@ -26,7 +26,8 @@ class _HomePageState extends State<HomePage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          UserModel user = snapshot.data!;
+          final user = snapshot.data!;
+          final bool isUserVip = user.isVip;
           return SingleChildScrollView(
             physics: ClampingScrollPhysics(),
             child: Column(
@@ -38,9 +39,7 @@ class _HomePageState extends State<HomePage> {
                       return ListTile(
                         leading: CircleAvatar(
                           radius: 20,
-                          backgroundImage: AssetImage(
-                            'assets/images/mentor.png',
-                          ),
+                          child: Icon(Icons.person),
                         ),
                         subtitle: Text(
                           user.nama,
@@ -67,9 +66,11 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (isUserVip == false) HeroWidget(),
+                      SizedBox(height: 20),
                       ContainerMentor(teksJoin: 'Diskusi lengkap di Group WA'),
                       SizedBox(height: 20),
-                      ChartWidget(),
+                      if (isUserVip) ChartWidget(),
                       SizedBox(height: 20),
                       Container(
                         padding: EdgeInsets.all(10),

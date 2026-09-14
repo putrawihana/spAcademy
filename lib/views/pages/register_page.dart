@@ -15,6 +15,8 @@ class _RegisterPageState extends State<RegisterPage> {
   TextEditingController controllerNama = TextEditingController();
   String pesanError = '';
   bool _isLoading = false;
+  final FocusNode emailFocus = FocusNode();
+  final FocusNode pwFocus = FocusNode();
 
   @override
   void dispose() {
@@ -65,81 +67,120 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            HeroWidget(),
-            SizedBox(height: 80),
-            TextField(
-              controller: controllerNama,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                hintText: 'nama',
-              ),
-              onEditingComplete: () {
-                setState(() {});
-              },
-            ),
-            SizedBox(height: 15),
-            TextField(
-              controller: controllerEmail,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                hintText: 'Email',
-              ),
-              onEditingComplete: () {
-                setState(() {});
-              },
-            ),
-            SizedBox(height: 15),
-            TextField(
-              controller: controllerPw,
-              obscureText: true,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                hintText: 'Password',
-              ),
-              onEditingComplete: () {
-                setState(() {});
-              },
-            ),
-            if (pesanError.isNotEmpty)
-              Padding(
-                padding: EdgeInsets.all(8),
-                child: Text(pesanError, style: TextStyle(color: Colors.red)),
-              ),
-            SizedBox(height: 40),
-            FilledButton(
-              onPressed: _isLoading
-                  ? null
-                  : () {
-                      _handleRegister();
-                    },
-              style: FilledButton.styleFrom(
-                minimumSize: Size(double.infinity, 40.0),
-              ),
-              child: _isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            FocusScope.of(context).unfocus();
+            Future.delayed(const Duration(milliseconds: 100), () {
+              if (mounted) {
+                Navigator.pop(context);
+              }
+            });
+          },
+          icon: Icon(Icons.arrow_back),
+        ),
+      ),
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20.0),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      HeroWidget(),
+                      SizedBox(height: 20),
+                      TextField(
+                        controller: controllerNama,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          hintText: 'nama',
+                        ),
+                        onSubmitted: (_) {
+                          FocusScope.of(context).requestFocus(emailFocus);
+                        },
+                        onEditingComplete: () {
+                          setState(() {});
+                        },
                       ),
-                    )
-                  : const Text('Register'),
-            ),
-            SizedBox(height: 80),
-          ],
+                      SizedBox(height: 8),
+                      TextField(
+                        controller: controllerEmail,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          hintText: 'Email',
+                        ),
+                        focusNode: emailFocus,
+                        onSubmitted: (_) {
+                          FocusScope.of(context).requestFocus(pwFocus);
+                        },
+                        onEditingComplete: () {
+                          setState(() {});
+                        },
+                      ),
+                      SizedBox(height: 8),
+                      TextField(
+                        controller: controllerPw,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          hintText: 'Password',
+                        ),
+                        focusNode: pwFocus,
+                        onSubmitted: (value) {
+                          _handleRegister();
+                        },
+                        textInputAction: TextInputAction.done,
+                        onEditingComplete: () {
+                          setState(() {});
+                        },
+                      ),
+                      if (pesanError.isNotEmpty)
+                        Padding(
+                          padding: EdgeInsets.all(8),
+                          child: Text(
+                            pesanError,
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      SizedBox(height: 40),
+                      FilledButton(
+                        onPressed: _isLoading
+                            ? null
+                            : () {
+                                _handleRegister();
+                              },
+                        style: FilledButton.styleFrom(
+                          minimumSize: Size(double.infinity, 40.0),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Register'),
+                      ),
+                      SizedBox(height: 80),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

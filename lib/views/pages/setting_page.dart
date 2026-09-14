@@ -14,7 +14,7 @@ class SettingPage extends StatefulWidget {
 class _SettingPageState extends State<SettingPage> {
   TextEditingController controller = TextEditingController();
   bool isDark = false;
-  String? menuItem = 'e1';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
