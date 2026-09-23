@@ -13,7 +13,6 @@ class ResetPasswordPage extends StatefulWidget {
 
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
   TextEditingController controllerEmail = TextEditingController();
-  final formKey = GlobalKey<FormState>();
   String pesanError = '';
 
   @override

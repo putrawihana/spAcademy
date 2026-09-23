@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/services/auth_services.dart';
-import 'package:flutter_application_2/views/widgets/hero_widget.dart';
+import 'package:flutter_application_2/views/widgets/simple_widget/hero_widget.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -30,6 +30,7 @@ class _RegisterPageState extends State<RegisterPage> {
     String email = controllerEmail.text.trim();
     String password = controllerPw.text.trim();
 
+    // ini sama serti validator di fromKey tapi kalo ini user ngk tau persis kolom mana yang salah
     if (nama.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -40,7 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() => _isLoading = true); //memeriksa apakah email sudah terdaftar
     String? error = await authService.value.register(
       email: email,
       password: password,
@@ -48,6 +49,7 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     setState(() {
+      //selesai server menjawab jadi false lagi
       _isLoading = false;
     });
 
@@ -72,6 +74,7 @@ class _RegisterPageState extends State<RegisterPage> {
           onPressed: () {
             FocusScope.of(context).unfocus();
             Future.delayed(const Duration(milliseconds: 100), () {
+              //delay agar memberikan waktu untuk keyboard ketutup baru pop
               if (mounted) {
                 Navigator.pop(context);
               }
@@ -156,7 +159,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       SizedBox(height: 40),
                       FilledButton(
                         onPressed: _isLoading
-                            ? null
+                            ? null //biar tombolnya jadi nonaktif ngk bisa di tekan
                             : () {
                                 _handleRegister();
                               },

@@ -5,8 +5,8 @@ import 'package:flutter_application_2/data/notifier.dart';
 import 'package:flutter_application_2/data/user_model.dart';
 import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:flutter_application_2/views/pages/upgrade_member_page.dart';
-import 'package:flutter_application_2/views/widgets/container/container_benner.dart';
-import 'package:flutter_application_2/views/widgets/container/container_widget.dart';
+import 'package:flutter_application_2/views/widgets/simple_widget/container_benner.dart';
+import 'package:flutter_application_2/views/widgets/simple_widget/container_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ModulWidget extends StatefulWidget {
@@ -18,8 +18,17 @@ class ModulWidget extends StatefulWidget {
   State<ModulWidget> createState() => _ModulWidgetState();
 }
 
+//=======================================================
+//langkah membuat filter
+//1.harus ada state kosong sebagai defult
+//2.user pilih apa , merubah state
+//3. build jalan ulang
+//4.where saring dari kata tertentu
+//5.list view munculin hasil saringan
+//=======================================================
+
 class _ModulWidgetState extends State<ModulWidget> {
-  String selectedLevel = 'semua';
+  String selectedLevel = 'semua'; //untuk nilai awal level
 
   Future<void> openDriverUrl(String url) async {
     final Uri uri = Uri.parse(url);
@@ -53,339 +62,382 @@ class _ModulWidgetState extends State<ModulWidget> {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                var allDocs = snapshot.data?.docs ?? [];
-                if (widget.jumlahTampilan != null) {
-                  allDocs = allDocs.take(widget.jumlahTampilan!).toList();
-                }
+                // StreamBuilder baru: baca completed modules per-user
+                return StreamBuilder<List<String>>(
+                  stream: authService.value.getCompletedModulesStream(),
+                  builder: (context, completedSnapshot) {
+                    final completedIds = completedSnapshot.data ?? [];
 
-                final int totalModul = allDocs.length;
-                final int jumlahSelesai = allDocs
-                    .where((doc) {
+                    var allDocs = snapshot.data?.docs ?? [];
+                    //ini baru jalan kolo jumlahtampilin ngk null dan alldoc cuma mengambil jumlah yang mau di tampilin
+                    //server kasih semua modul tanpa filter
+                    if (widget.jumlahTampilan != null) {
+                      allDocs = allDocs.take(widget.jumlahTampilan!).toList();
+                    }
+
+                    final int totalModul = allDocs.length;
+                    // cek selesai dari subcollection user, bukan dari dokumen modul
+                    final int jumlahSelesai = allDocs
+                        .where((doc) => completedIds.contains(doc.id))
+                        .toList()
+                        .length;
+                    final filteredDocs = allDocs.where((doc) {
+                      //di ubah jadi map string agar bisa di baca
                       final data = doc.data() as Map<String, dynamic>;
-                      return data['isCompleted'] ?? false;
-                    })
-                    .toList()
-                    .length;
-                final filteredDocs = allDocs.where((doc) {
-                  final data = doc.data() as Map<String, dynamic>;
-                  final level = (data['level'] ?? '').toString().toLowerCase();
-                  if (selectedLevel == 'semua') return true;
-                  return level == selectedLevel;
-                }).toList();
+                      final level = (data['level'] ?? '')
+                          .toString()
+                          .toLowerCase();
+                      if (selectedLevel == 'semua') return true;
+                      return level == selectedLevel;
+                    }).toList();
+                    //jadi level hanya menampilkan nilia yang di miliki selected level
+                    //dan menghasilkan true sehingga tidak ada yg false semua tersaring
+                    //kalo selain semua akan menyaring berdasarkan yang di pilih user, selain itu jadi false/dibuang
+                    //nilai selected page di atur dari chip
 
-                // ============================================================
-                // BAGIAN YANG DIPERBAIKI: konten daftar modul disimpan
-                // di satu variable dulu, supaya tidak ditulis 2 kali.
-                // ============================================================
-                Widget kontenModul = filteredDocs.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Belum ada modul untuk level ini.',
-                          style: TextStyle(
-                            color: isDark ? Colors.white : Colors.black,
-                          ),
-                        ),
-                      )
-                    : ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        padding: widget.benner
-                            ? const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              )
-                            : EdgeInsets.symmetric(vertical: 8),
-                        itemCount: filteredDocs.length,
-                        itemBuilder: (context, index) {
-                          final doc = filteredDocs[index];
-                          final data = doc.data() as Map<String, dynamic>;
-                          final String judul = data['judul'] ?? "Modul";
-                          final String level = data['level'] ?? 'pemula';
-                          final String videoUrl = data['videoUrl'] ?? '';
-                          final bool isVipOnly = data['isVipOnly'] ?? false;
-                          final bool isLocked =
-                              isVipOnly && !isUserVip && !isAdmin;
-                          bool isCompleted = data['isCompleted'] ?? false;
-
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? const Color(0xFF1E293B)
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: const [
-                                BoxShadow(color: Colors.grey, blurRadius: 2),
-                              ],
-                            ),
-                            child: ContainerWidget(
-                              onTap: () async {
-                                if (isLocked) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Modul ini khusus member VIP!',
-                                      ),
-                                      backgroundColor: Colors.amber,
-                                    ),
-                                  );
-                                  await Future.delayed(
-                                    const Duration(seconds: 2),
-                                  );
-                                  if (!context.mounted) return;
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) {
-                                        return UpgradeMemberPage();
-                                      },
-                                    ),
-                                  );
-                                } else if (videoUrl.isNotEmpty) {
-                                  widget.benner
-                                      ? openDriverUrl(videoUrl)
-                                      : selectedPageNotifier.value = 1;
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Link video belum tersedia.',
-                                      ),
-                                    ),
-                                  );
-                                }
-                              },
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Container(
-                                    child: Row(
-                                      spacing: 10,
-                                      children: [
-                                        Container(
-                                          height: 50,
-                                          width: 50,
-                                          decoration: BoxDecoration(
-                                            color: Colors.amber,
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                          ),
-                                          child: Icon(
-                                            isLocked
-                                                ? Icons.lock
-                                                : Icons.play_arrow,
-                                            color: Colors.white,
-                                            size: 26,
-                                          ),
-                                        ),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  judul,
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 10),
-                                                if (isVipOnly)
-                                                  Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 6,
-                                                          vertical: 2,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color:
-                                                          Colors.amber.shade700,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            4,
-                                                          ),
-                                                    ),
-                                                    child: const Text(
-                                                      'VIP',
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 10,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ),
-                                              ],
-                                            ),
-                                            Text(
-                                              level.toUpperCase(),
-                                              style: KTextStyle.descripsiText,
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      if (isAdmin)
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.delete_forever_outlined,
-                                            color: Colors.red,
-                                          ),
-                                          onPressed: () =>
-                                              _comformingDelete(doc.id, judul),
-                                        ),
-                                      if (isUserVip)
-                                        Checkbox(
-                                          value: isCompleted,
-                                          onChanged: (bool? value) async {
-                                            await authService.value
-                                                .updateModuleCompletion(
-                                                  doc.id,
-                                                  value ?? false,
-                                                );
-                                          },
-                                        ),
-                                    ],
-                                  ),
-                                ],
+                    // ============================================================
+                    // BAGIAN YANG DIPERBAIKI: konten daftar modul disimpan
+                    // di satu variable dulu, supaya tidak ditulis 2 kali.
+                    // ============================================================
+                    //jadi nilai selected udh beda ketika sampai di sini
+                    Widget kontenModul = filteredDocs.isEmpty
+                        ? Center(
+                            child: Text(
+                              'Belum ada modul untuk level ini.',
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
                               ),
                             ),
-                          );
-                        },
-                      );
+                          )
+                        : ListView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            padding: widget.benner
+                                ? const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  )
+                                : EdgeInsets.symmetric(vertical: 8),
+                            itemCount: filteredDocs.length,
+                            itemBuilder: (context, index) {
+                              final doc = filteredDocs[index];
+                              final data = doc.data() as Map<String, dynamic>;
+                              final String judul = data['judul'] ?? "Modul";
+                              final String level = data['level'] ?? 'pemula';
+                              final String videoUrl = data['videoUrl'] ?? '';
+                              final bool isVipOnly = data['isVipOnly'] ?? false;
+                              final bool isLocked =
+                                  isVipOnly && !isUserVip && !isAdmin;
+                              //kalo semuanya true terkunci, perlu di balik agar yang ke kunci yang bukan vip/admin
+                              // baca dari completedIds per-user, bukan dari dokumen modul
+                              bool isCompleted = completedIds.contains(doc.id);
 
-                // ============================================================
-                // Susunan akhir Column: header (ContainerBenner) HANYA muncul
-                // kalau widget.benner == true. Konten modul dibungkus Expanded
-                // HANYA kalau widget.benner == true (dipakai sendiri di
-                // ModulPage, tinggi terbatas dari Scaffold). Kalau false
-                // (ditempel di HomePage yang scroll-nya SingleChildScrollView,
-                // tinggi TAK terbatas), konten modul dipakai langsung TANPA
-                // Expanded karena sudah shrinkWrap.
-                // ============================================================
-                return Column(
-                  children: [
-                    if (widget.benner)
-                      ContainerBenner(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          spacing: 8,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Modul Kelas Saham',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Kurikulum terstruktur oleh mentor',
-                                      style: TextStyle(fontSize: 14),
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF1E293B)
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(14),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Colors.grey,
+                                      blurRadius: 2,
                                     ),
                                   ],
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.all(3),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: const Color(0xFF10B981),
-                                      width: 2,
-                                    ),
-                                    color: isDark
-                                        ? const Color.fromARGB(255, 10, 82, 58)
-                                        : const Color.fromARGB(
-                                            255,
-                                            200,
-                                            228,
-                                            218,
+                                child: ContainerWidget(
+                                  //3 kondisi:isLocked - linkada - ngk ada link
+                                  onTap: () async {
+                                    if (isLocked) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Modul ini khusus member VIP!',
                                           ),
-                                    borderRadius: BorderRadius.circular(10),
+                                          backgroundColor: Colors.amber,
+                                        ),
+                                      );
+                                      await Future.delayed(
+                                        const Duration(seconds: 2),
+                                      );
+                                      if (!context.mounted) return;
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) {
+                                            return UpgradeMemberPage();
+                                          },
+                                        ),
+                                      );
+                                    } else if (videoUrl.isNotEmpty) {
+                                      widget.benner
+                                          ? openDriverUrl(videoUrl)
+                                          : selectedPageNotifier.value = 1;
+                                    } else {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Link video belum tersedia.',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        child: Row(
+                                          spacing: 10,
+                                          children: [
+                                            Container(
+                                              height: 50,
+                                              width: 50,
+                                              decoration: BoxDecoration(
+                                                color: Colors.amber,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: Icon(
+                                                isLocked
+                                                    ? Icons.lock
+                                                    : Icons.play_arrow,
+                                                color: Colors.white,
+                                                size: 26,
+                                              ),
+                                            ),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      judul,
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 10),
+                                                    if (isVipOnly)
+                                                      Container(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 2,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color: Colors
+                                                              .amber
+                                                              .shade700,
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                4,
+                                                              ),
+                                                        ),
+                                                        child: const Text(
+                                                          'VIP',
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 10,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                  ],
+                                                ),
+                                                Text(
+                                                  level.toUpperCase(),
+                                                  style:
+                                                      KTextStyle.descripsiText,
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (isAdmin)
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.delete_forever_outlined,
+                                                color: Colors.red,
+                                              ),
+                                              onPressed: () =>
+                                                  _comformingDelete(
+                                                    doc.id,
+                                                    judul,
+                                                  ),
+                                            ),
+                                          if (isUserVip)
+                                            Checkbox(
+                                              value: isCompleted,
+                                              onChanged: (bool? value) async {
+                                                await authService.value
+                                                    .updateModuleCompletion(
+                                                      doc.id,
+                                                      value ?? false,
+                                                    );
+                                              },
+                                            ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+
+                    // ============================================================
+                    // Susunan akhir Column: header (ContainerBenner) HANYA muncul
+                    // kalau widget.benner == true. Konten modul dibungkus Expanded
+                    // HANYA kalau widget.benner == true (dipakai sendiri di
+                    // ModulPage, tinggi terbatas dari Scaffold). Kalau false
+                    // (ditempel di HomePage yang scroll-nya SingleChildScrollView,
+                    // tinggi TAK terbatas), konten modul dipakai langsung TANPA
+                    // Expanded karena sudah shrinkWrap.
+                    // ============================================================
+                    return Column(
+                      children: [
+                        if (widget.benner)
+                          ContainerBenner(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              spacing: 8,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Modul Kelas Saham',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Kurikulum terstruktur oleh mentor',
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                      ],
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: const Color(0xFF10B981),
+                                          width: 2,
+                                        ),
+                                        color: isDark
+                                            ? const Color.fromARGB(
+                                                255,
+                                                10,
+                                                82,
+                                                58,
+                                              )
+                                            : const Color.fromARGB(
+                                                255,
+                                                200,
+                                                228,
+                                                218,
+                                              ),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Row(
+                                        spacing: 5,
+                                        children: [
+                                          Text(
+                                            '$jumlahSelesai/$totalModul',
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF10B981),
+                                            ),
+                                          ),
+                                          const Text(
+                                            'Selesai',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF10B981),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('Progres Belajar Anda'),
+                                    Text(
+                                      '${totalModul == 0 ? 0 : ((jumlahSelesai / totalModul) * 100).toStringAsFixed(0)}%',
+                                    ),
+                                  ],
+                                ),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: LinearProgressIndicator(
+                                    value: totalModul == 0
+                                        ? 0.0
+                                        : (jumlahSelesai / totalModul),
+                                    minHeight: 8,
+                                    backgroundColor: isDark
+                                        ? Colors.white12
+                                        : Colors.black26,
+                                    valueColor:
+                                        const AlwaysStoppedAnimation<Color>(
+                                          Colors.greenAccent,
+                                        ),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
                                   ),
                                   child: Row(
-                                    spacing: 5,
                                     children: [
-                                      Text(
-                                        '$jumlahSelesai/$totalModul',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF10B981),
-                                        ),
-                                      ),
-                                      const Text(
-                                        'Selesai',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF10B981),
-                                        ),
-                                      ),
+                                      //parameternya di buat dua agar fleksible bisa diubah ubah
+                                      _buildFilterChip('semua', 'Semua'),
+                                      _buildFilterChip('pemula', 'Pemuala'),
+                                      _buildFilterChip('menengah', 'Menengah'),
+                                      _buildFilterChip('lanjutan', 'Lanjutan'),
                                     ],
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('Progres Belajar Anda'),
-                                Text(
-                                  '${totalModul == 0 ? 0 : ((jumlahSelesai / totalModul) * 100).toStringAsFixed(0)}%',
-                                ),
-                              ],
-                            ),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: LinearProgressIndicator(
-                                value: totalModul == 0
-                                    ? 0.0
-                                    : (jumlahSelesai / totalModul),
-                                minHeight: 8,
-                                backgroundColor: isDark
-                                    ? Colors.white12
-                                    : Colors.black26,
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                  Colors.greenAccent,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              child: Row(
-                                children: [
-                                  _buildFilterChip('semua', 'semua'),
-                                  _buildFilterChip('pemula', 'pemula'),
-                                  _buildFilterChip('menengah', 'menengah'),
-                                  _buildFilterChip('lanjutan', 'lanjutan'),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                          ),
 
-                    // <-- INI BAGIAN UTAMA PERBAIKANNYA -->
-                    widget.benner ? Expanded(child: kontenModul) : kontenModul,
-                  ],
+                        // <-- INI BAGIAN UTAMA PERBAIKANNYA -->
+                        widget.benner
+                            ? Expanded(child: kontenModul)
+                            : kontenModul,
+                      ],
+                    );
+                  },
                 );
               },
             );
@@ -396,6 +448,8 @@ class _ModulWidgetState extends State<ModulWidget> {
   }
 
   Widget _buildFilterChip(String levelKey, String label) {
+    //levelKey sebagai logika di data base, sedangkan label apa yang di lihat user
+    //levelKey hanya perantar sementara, dia ada di tiap chip jadi kalo chip itu di tekan nilai itu yang di ambil
     final bool isSelected = selectedLevel == levelKey;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
@@ -408,6 +462,7 @@ class _ModulWidgetState extends State<ModulWidget> {
           color: isSelected ? Colors.white : Colors.grey.shade600,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
+        //ini yang merubah nilai selectedLevel
         onSelected: (selected) {
           if (selected) {
             setState(() {

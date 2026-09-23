@@ -39,7 +39,6 @@ class _ResearchPageState extends State<ResearchPage> {
               ],
             ),
           ),
-
           const SizedBox(height: 20),
           Expanded(
             child: SingleChildScrollView(

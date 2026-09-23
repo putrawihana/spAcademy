@@ -7,9 +7,14 @@ import 'package:flutter_application_2/views/pages/reseach/research_page.dart';
 
 import 'widgets/navbar_widget.dart';
 
-class WidgetTree extends StatelessWidget {
+class WidgetTree extends StatefulWidget {
   WidgetTree({super.key});
 
+  @override
+  State<WidgetTree> createState() => _WidgetTreeState();
+}
+
+class _WidgetTreeState extends State<WidgetTree> {
   @override
   Widget build(BuildContext context) {
     List<Widget> pages = [HomePage(), ModulPage(), ResearchPage()];

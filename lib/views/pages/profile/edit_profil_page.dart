@@ -24,7 +24,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
 
   @override
   void initState() {
-    super.initState();
+    super
+        .initState(); //isi controller nya dari apa yang di kirim dari profilPage
     namaController = TextEditingController(text: widget.nama);
     pekerjaanController = TextEditingController(text: widget.pekerjaan);
     descriptionController = TextEditingController(text: widget.bio);
@@ -38,7 +39,10 @@ class _EditProfilPageState extends State<EditProfilPage> {
     super.dispose();
   }
 
+  //jadi edit profil required 3 variable ini agar bisa dapat data sekarang(nama,pekerjaan,bio)
+  //data yang di terima di update sehiga yang di firestore berubah
   void onSaveProfile() async {
+    //di declar dulu isi controller di sini
     String nama = namaController.text.trim();
     String pekerjaan = pekerjaanController.text.trim();
     String bio = descriptionController.text.trim();
@@ -54,6 +58,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
     });
 
     String? error = await authService.value.updateProfile(
+      //required update kita kasih apa yang kita sudah ubah
       nama: nama,
       profession: pekerjaan,
       bio: bio,
@@ -62,7 +67,6 @@ class _EditProfilPageState extends State<EditProfilPage> {
       _isLoading = false;
     });
     if (!mounted) return;
-
     if (error == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -83,7 +87,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
     return Scaffold(
       appBar: AppBar(title: Text('Edit Profil')),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : Card(
               child: Column(
                 children: [
@@ -122,6 +126,9 @@ class _EditProfilPageState extends State<EditProfilPage> {
                     onPressed: onSaveProfile,
                     label: Text('simpan Edit'),
                     icon: Icon(Icons.save),
+                    style: TextButton.styleFrom(
+                      minimumSize: Size(double.infinity, 50),
+                    ),
                   ),
                 ],
               ),

@@ -1,10 +1,12 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/data/constans.dart';
-import 'package:flutter_application_2/views/widgets/container/container_mentor.dart';
+import 'package:flutter_application_2/views/widgets/simple_widget/container_mentor.dart';
 import 'package:video_player/video_player.dart';
 
+// udah ngk di pakai tapi bisa di pelajari
 class VideoPlayerPage extends StatefulWidget {
+  //ini semua tadinya dari modul page
   final String videoPath;
   final String judul;
   final String level;
@@ -22,8 +24,8 @@ class VideoPlayerPage extends StatefulWidget {
 }
 
 class _VideoPlayerPageState extends State<VideoPlayerPage> {
-  late VideoPlayerController _controller;
-  ChewieController? _chewieController;
+  late VideoPlayerController _controller; //ini yang mengatur gimana video
+  ChewieController? _chewieController; //chewie hanya mempercantik tampilanya
 
   @override
   void initState() {
@@ -54,6 +56,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   }
 
   String formatDurasi(Duration durasi) {
+    //mengatur tanpilan durasi
     String duaDigit(int n) => n.toString().padLeft(2, '0');
     String menit = duaDigit(durasi.inMinutes.remainder(60));
     String detik = duaDigit(durasi.inSeconds.remainder(60));

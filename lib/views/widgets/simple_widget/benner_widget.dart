@@ -12,7 +12,7 @@ class BennerWidget extends StatefulWidget {
 class _BennerWidgetState extends State<BennerWidget> {
   final PageController _pageController = PageController();
   int halamanSekarng = 0;
-  Timer? _timer;
+  Timer? _timer; //jadikan nullble dulu biar baru jalan ketika inits
 
   List<String> daftarGambar = [
     'assets/images/slide1.png',
@@ -27,23 +27,24 @@ class _BennerWidgetState extends State<BennerWidget> {
   }
 
   void autoScroll() {
-    _timer = Timer.periodic(Duration(seconds: 3), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 4), (timer) {
       if (halamanSekarng < daftarGambar.length - 1) {
         halamanSekarng++;
       } else {
         halamanSekarng = 0;
       }
       _pageController.animateToPage(
+        //membuat animasi berpindah, perintahnya dari sini maskipun nilai halaman berubah tidak akan pengaruh tanpa ini
         halamanSekarng,
-        duration: Duration(microseconds: 400),
-        curve: Curves.easeInOut,
+        duration: Duration(seconds: 2),
+        curve: Curves.easeInOut, //lambat awal dan akhir cepat di antara
       );
     });
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _timer?.cancel(); //pakai cencel bukan dispose
     _pageController.dispose();
     super.dispose();
   }
@@ -55,6 +56,7 @@ class _BennerWidgetState extends State<BennerWidget> {
         SizedBox(
           height: 200,
           child: PageView.builder(
+            //untuk membuar widget yang bisa di geser, 'builder' hanya di munculkan ketika di minta
             controller: _pageController,
             itemCount: daftarGambar.length,
             onPageChanged: (index) {
@@ -67,7 +69,6 @@ class _BennerWidgetState extends State<BennerWidget> {
             },
           ),
         ),
-
         Container(
           padding: EdgeInsets.only(top: 180),
           child: Row(

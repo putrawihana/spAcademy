@@ -16,9 +16,17 @@ class ProfilPage extends StatefulWidget {
 }
 
 class _ProfilPageState extends State<ProfilPage> {
+  @override
+  void initState() {
+    super.initState();
+    print(
+      "currentUser di [nama halaman]: ${authService.value.currentUser?.uid ?? 'NULL'}",
+    );
+  }
+
   void logout() async {
     try {
-      await authService.value.signOut();
+      await authService.value.signOut(); //ini menghapuskan token login user
       selectedPageNotifier.value = 0;
       Navigator.pushReplacement(
         context,
@@ -29,7 +37,9 @@ class _ProfilPageState extends State<ProfilPage> {
         ),
       );
     } on FirebaseAuthException catch (e) {
-      debugPrint(e.message);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Ada Yang Error Ni, Coba Lagi')),
+      );
     }
   }
 
@@ -37,20 +47,25 @@ class _ProfilPageState extends State<ProfilPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: StreamBuilder<UserModel?>(
+        //usermodel harus di buat null karena sebelum login datanya tidak ada
+        //ketika stream mendengarkan server ada jeda bisa replace jadi null sambil menunggu data
         stream: authService.value.getUserDataStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data == null) {
+            //kenapa harus 2x hasData bisa aja jadi false meskipun dia true
+            //bisa aja hasData true padahal null, makanya di lakukan dua kali agar lebih aman
             return const Center(child: Text('Data profil tidak di temuakan'));
           }
           UserModel user = snapshot.data!;
 
           return SingleChildScrollView(
             child: Stack(
+              //membuat potongan gambar jadi wallpaper dengan stack, dan di beri padding angar lapisan bawahnay kelihatan
               children: [
-                Container(
+                SizedBox(
                   width: double.infinity,
                   height: 150,
                   child: Image.asset(
@@ -97,10 +112,7 @@ class _ProfilPageState extends State<ProfilPage> {
                         ],
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 20,
-                          horizontal: 25,
-                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 20),
                         child: Center(
                           child: CircleAvatar(
                             radius: 50,
@@ -163,12 +175,13 @@ class _ProfilPageState extends State<ProfilPage> {
                             'Panel Admin SP Academy',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.blue,
+                              color: Colors.orange,
                             ),
                           ),
                           trailing: const Icon(
                             Icons.arrow_forward_ios,
                             size: 16,
+                            color: Colors.orange,
                           ),
                           onTap: () {
                             Navigator.push(

@@ -22,6 +22,7 @@ class UserModel {
   bool get isAdmin => role.toLowerCase() == 'admin';
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
+    //mengubah data mentah dari server biar enak di pakai dart
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>? ?? {};
     return UserModel(
       uid: doc.id,
@@ -35,6 +36,7 @@ class UserModel {
   }
 
   Map<String, dynamic> toMap() {
+    // ini untuk ngirim ke server karena mintanay tipe map
     return {
       'uid': uid,
       'nama': nama,

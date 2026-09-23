@@ -53,6 +53,8 @@ class _MyAppState extends State<MyApp> {
       valueListenable: isDarkNotifier,
       builder: (context, isDark, child) {
         return MaterialApp(
+          initialRoute: '/',
+          routes: {'/welcome': (context) => WelcomePage()},
           scrollBehavior: NonStreach(),
           debugShowCheckedModeBanner: false,
           theme: ThemeData(

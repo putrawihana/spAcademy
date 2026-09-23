@@ -1,111 +1,149 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/data/chart_model.dart';
+import 'package:flutter_application_2/data/constans.dart';
+import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:http/http.dart' as http;
 
 class ChartWidget extends StatefulWidget {
   const ChartWidget({super.key});
 
   @override
-  State<ChartWidget> createState() => _ChartWidgetState();
+  State<ChartWidget> createState() => ChartWidgetState();
 }
 
-class _ChartWidgetState extends State<ChartWidget> {
-  String priceIhsg = 'Loading ....';
-  String priceBull = 'Loading ....';
-  String changeIhsg = '';
-  String changeBull = '';
-  bool isIhsgPositive = true;
-  bool isBullPositive = true;
+class ChartWidgetState extends State<ChartWidget> {
+  List<Watchlist> daftarSaham = [];
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    fetchDataIhsg();
+    listenerStream();
   }
 
-  Future<void> fetchDataIhsg() async {
+  Future<void> refreshData() async {
+    await fetchAllData();
+  }
+
+  void listenerStream() async {
+    setState(() {
+      isLoading = false;
+    }); //menangkap perubahan di stream
+    authService.value.getWatchlistStream().listen((symbols) async {
+      daftarSaham =
+          symbols //symbols semua daftar saham di firestone
+              .map(
+                (s) => Watchlist(
+                  symbol: s['symbol']!,
+                  tittle: s['symbol']!,
+                  subtittle: s['name']!,
+                ),
+              )
+              .toList();
+      await fetchAllData();
+    });
+  }
+
+  Future<void> fetchAllData() async {
+    //jadi pertama requst ke http, dapat data kemudian  di olah
     try {
-      final urlIhsg = Uri.parse(
-        'https://query1.finance.yahoo.com/v8/finance/chart/^JKSE',
+      final responses = await Future.wait(
+        //requst ke http
+        daftarSaham.map(
+          (s) => http.get(
+            Uri.parse(
+              'https://query1.finance.yahoo.com/v8/finance/chart/${s.symbol}',
+            ),
+          ),
+        ),
       );
-      final urlBull = Uri.parse(
-        'https://query1.finance.yahoo.com/v8/finance/chart/BULL.JK',
-      );
 
-      final result = await Future.wait([http.get(urlIhsg), http.get(urlBull)]);
-
-      final responseIhsg = result[0];
-      final responseBull = result[1];
-
-      if (responseIhsg.statusCode == 200 && responseBull.statusCode == 200) {
-        final dataIhsg = jsonDecode(responseIhsg.body);
-        final metaIhsg = dataIhsg['chart']['result'][0]['meta'];
-        double currentIhsg = metaIhsg['regularMarketPrice'] ?? 0.0;
-        double prevCloseIhsg = metaIhsg['previousClose'] ?? currentIhsg;
-        double diffIhsg = currentIhsg - prevCloseIhsg;
-        double pctIhsg = (diffIhsg / prevCloseIhsg) * 100;
-
-        final dataBull = jsonDecode(responseBull.body);
-        final metaBull = dataBull['chart']['result'][0]['meta'];
-        double currentBull = metaBull['regularMarketPrice'] ?? 0.0;
-        double prevCloseBull = metaBull['previousClose'] ?? currentBull;
-        double diffBull = currentBull - prevCloseBull;
-        double pctBull = (diffBull / prevCloseBull) * 100;
-
-        setState(() {
-          priceIhsg = currentIhsg.toStringAsFixed(2);
-          changeIhsg =
-              "${pctIhsg >= 0 ? '+' : ''}${pctIhsg.toStringAsFixed(2)}%";
-          isIhsgPositive = pctIhsg >= 0;
-
-          priceBull = currentBull.toStringAsFixed(2);
-          changeBull =
-              "${pctBull >= 0 ? '+' : ''}${pctBull.toStringAsFixed(2)}%";
-          isBullPositive = pctBull >= 0;
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          priceIhsg = "Gagal memuat";
-          priceBull = "Gagal memuat";
-          isLoading = false;
-        });
-      }
-    } catch (e) {
       setState(() {
-        priceIhsg = "error";
-        priceBull = "error";
+        for (int i = 0; i < daftarSaham.length; i++) {
+          if (responses[i].statusCode == 200) {
+            final data = jsonDecode(responses[i].body);
+            //JsonDecode untuk ubah dari data mentah jadi map<String, dynamic>
+            //ini path nya harus masuk chart -> result[0] - meta
+            //baru bisa akses field di dalam meta ex regularmarket price
+            final meta = data['chart']['result'][0]['meta'];
+            double current = meta['regularMarketPrice'] ?? 0.0;
+            double percent = meta['regularMarketChangePercent'] ?? 0.0;
+            daftarSaham[i].price = current.toStringAsFixed(0);
+            daftarSaham[i].change =
+                "${percent >= 0 ? '+' : ''}${percent.toStringAsFixed(2)}%";
+            daftarSaham[i].isPositive =
+                percent >= 0; //kalo di bawah 0 maka false
+          } else {
+            daftarSaham[i].price = 'Gagal Memuat';
+          }
+        }
         isLoading = false;
       });
-      debugPrint('terjadi kesalahan $e');
+    } catch (e) {
+      setState(() => isLoading = false);
+      debugPrint('Terjadi Kesalahan $e');
     }
   }
+
+  Future<void> _toggleWatchlist(String symbol) async {
+    //symbol dari watclish bukan stocklist
+    await authService.value.removeFromWatchlist(symbol);
+  } //alur hapus datanya
+  // triger ondismiss -> authremovewatch jalan -> uid yang sesuai menghapus symbol
+  //-> streamwatchlist update -> listener denga data baru -> update ui
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    return Column(
-      children: [
-        _buildStockCard(
-          title: 'IHSG',
-          subtitle: 'Index Harga Saham Gabungan',
-          price: priceIhsg,
-          percent: changeIhsg,
-          isPositive: isIhsgPositive,
-        ),
-        const SizedBox(height: 12),
+    if (daftarSaham.isEmpty) {
+      return const Center(child: Text('Belum Ada Saham di Watchlist.'));
+    }
+    return Card(
+      color: Colors.white,
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: daftarSaham.length,
+        itemBuilder: (context, index) {
+          final saham = daftarSaham[index];
+          return Column(
+            children: [
+              Dismissible(
+                key: ValueKey(saham.symbol), //yang membedakan tiap item
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
 
-        _buildStockCard(
-          title: 'BULL',
-          subtitle: 'Buana Listiya Lautan',
-          price: priceBull,
-          percent: changeBull,
-          isPositive: isBullPositive,
-        ),
-      ],
+                  child: const Icon(Icons.delete, color: Colors.white),
+                ),
+
+                onDismissed: (direction) {
+                  //ketika kotak sudah hilang aksi di jalankan
+                  _toggleWatchlist(saham.symbol);
+                },
+                child: _buildStockCard(
+                  title: saham.tittle,
+                  subtitle: saham.subtittle,
+                  price: saham.price,
+                  percent: saham.change,
+                  isPositive: saham.isPositive,
+                ),
+              ),
+              if (index < daftarSaham.length - 1)
+                const Divider(height: 1, thickness: 1, color: Colors.black12),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -117,13 +155,8 @@ class _ChartWidgetState extends State<ChartWidget> {
     required bool isPositive,
   }) {
     return Container(
-      height: 100,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 5)],
-      ),
+      height: 70,
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -134,9 +167,9 @@ class _ChartWidgetState extends State<ChartWidget> {
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.w900,
-                  letterSpacing: 3,
+                  letterSpacing: 2,
                   color: Colors.black,
                 ),
               ),
@@ -155,7 +188,7 @@ class _ChartWidgetState extends State<ChartWidget> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                price,
+                KTextStyle.formatRibuan(price),
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

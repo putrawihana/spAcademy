@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/views/widgets/benner_widget.dart';
+import 'package:flutter_application_2/views/widgets/simple_widget/benner_widget.dart';
 
 class HeroWidget extends StatelessWidget {
   const HeroWidget({super.key});
@@ -7,7 +7,7 @@ class HeroWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Hero(
-      tag: 'Hero1',
+      tag: 'Hero1', //di berikan tag agar tahu yang mana yang di gerakan
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),

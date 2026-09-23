@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/data/constans.dart';
-import 'package:flutter_application_2/views/widgets/container/container_widget.dart';
+import 'package:flutter_application_2/views/widgets/simple_widget/container_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ContainerMentor extends StatefulWidget {
@@ -13,13 +13,16 @@ class ContainerMentor extends StatefulWidget {
 
 class _ContainerMentorState extends State<ContainerMentor> {
   Future<void> openLink(String url) async {
-    final Uri uri = Uri.parse(url);
+    final Uri uri = Uri.parse(
+      url,
+    ); //mengubah String url agar di pahami lauchUrl
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      //ini Future bool, urutanya nya dart tunggu hasil launchUrl hasil nya baru di balik pakai !
+      //di balik karene hasil yang mau di tampilin ketika gagal
+      //ketika hasilnya true di balik jadi false maka scaffold ngk muncul gitu sebaliknya
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tidak dapat membuka link Google Drive.'),
-          ),
+          const SnackBar(content: Text('Tidak dapat membuka Grup.')),
         );
       }
     }

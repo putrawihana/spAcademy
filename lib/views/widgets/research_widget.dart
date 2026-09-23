@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_2/data/notifier.dart';
 import 'package:flutter_application_2/services/auth_services.dart';
 import 'package:flutter_application_2/views/pages/reseach/baca_research_page.dart';
+import 'package:flutter_application_2/views/pages/reseach/edit_riset.dart';
 import 'package:flutter_application_2/views/pages/upgrade_member_page.dart';
 import 'package:intl/intl.dart';
 
@@ -18,6 +19,34 @@ class ResearchWidget extends StatefulWidget {
 class _ResearchWidgetState extends State<ResearchWidget> {
   String ketikan = '';
   final TextEditingController searchController = TextEditingController();
+
+  void confirmedDelete(String docId, String judul) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Research?'),
+        content: Text('Sudah Yakin Mau Hapus ini :>'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await authService.value.deleteResearche(docId);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('BeRH4siL hApu5 research')),
+                );
+              }
+            },
+            child: Text('hapus'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +86,7 @@ class _ResearchWidgetState extends State<ResearchWidget> {
               builder: (context, userSnapshot) {
                 final user = userSnapshot.data;
                 final bool isUserVip = user?.isVip ?? false;
+                final bool isAdmin = user?.isAdmin ?? false;
 
                 return StreamBuilder<QuerySnapshot>(
                   stream: authService.value.getResearchesStream(),
@@ -98,6 +128,7 @@ class _ResearchWidgetState extends State<ResearchWidget> {
                           itemCount: SearchResearch.length,
                           itemBuilder: (context, index) {
                             final doc = SearchResearch[index];
+                            final String docId = doc.id;
                             final data = doc.data() as Map<String, dynamic>;
                             final String ticker = data['ticker'] ?? 'SAHAM';
                             final String judul = data['judul'] ?? '-';
@@ -126,50 +157,84 @@ class _ResearchWidgetState extends State<ResearchWidget> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 2,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.greenAccent,
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          ticker,
-                                          style: const TextStyle(
-                                            color: Color.fromARGB(
-                                              255,
-                                              66,
-                                              145,
-                                              107,
+                                      Row(
+                                        spacing: 10,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 2,
                                             ),
-                                            fontWeight: FontWeight.w700,
+                                            decoration: BoxDecoration(
+                                              color: Colors.greenAccent,
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              ticker,
+                                              style: const TextStyle(
+                                                color: Color.fromARGB(
+                                                  255,
+                                                  66,
+                                                  145,
+                                                  107,
+                                                ),
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
                                           ),
-                                        ),
+                                          if (isVipOnly)
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 2,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.amber.shade700,
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              child: const Text(
+                                                'VIP',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                        ],
                                       ),
-                                      if (isVipOnly)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 6,
-                                            vertical: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.amber.shade700,
-                                            borderRadius: BorderRadius.circular(
-                                              4,
+                                      if (isAdmin)
+                                        Row(
+                                          children: [
+                                            IconButton(
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) {
+                                                      return EditRiset(
+                                                        docId: docId,
+                                                        data: data,
+                                                      );
+                                                    },
+                                                  ),
+                                                );
+                                              },
+                                              icon: Icon(Icons.edit),
                                             ),
-                                          ),
-                                          child: const Text(
-                                            'VIP',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
+                                            IconButton(
+                                              onPressed: () {
+                                                confirmedDelete(docId, judul);
+                                              },
+                                              icon: Icon(
+                                                Icons.delete,
+                                                color: Colors.pinkAccent,
+                                              ),
                                             ),
-                                          ),
+                                          ],
                                         ),
                                     ],
                                   ),

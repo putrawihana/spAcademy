@@ -231,6 +231,7 @@ class _TermsServicePageState extends State<TermsServicePage> {
                 Checkbox(
                   value: isCheck,
                   onChanged: (bool? value) {
+                    //memang bawaannya checkbox bertipe nullable karene dia three state true, false, null. makanya di sini harus null
                     setState(() {
                       isCheck = value ?? false;
                     });

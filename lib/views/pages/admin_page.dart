@@ -11,12 +11,17 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage>
     with SingleTickerProviderStateMixin {
-  late TabController tabController;
+  //agar berjalan lancar tanpa patah patah, ini alat bungkus khusus, wajib ada karena tab controller perlu vsyc
+  late TabController
+  tabController; //pakai late karena sekarang belum ada nilainya tapi pasti ada
 
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 3, vsync: this);
+    tabController = TabController(
+      length: 3,
+      vsync: this,
+    ); //this merujuk ke state adminpagestate, kerena udh pakai singletickerprovideranimasi
   }
 
   @override
@@ -25,6 +30,7 @@ class _AdminPageState extends State<AdminPage>
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
         bottom: TabBar(
+          //memang pasangan ya tabBarView bis di scroll, mematikan halaman yang tidak aktif beda sama index stack di navbar
           controller: tabController,
           tabs: const [
             Tab(icon: Icon(Icons.people), text: 'Kelola VIP'),
@@ -34,7 +40,8 @@ class _AdminPageState extends State<AdminPage>
         ),
       ),
       body: TabBarView(
-        controller: tabController,
+        controller:
+            tabController, //harus pakai cotroller sama agar bisa connect dengan tabBar
         children: [
           _buildUserManagementTab(),
           _buildUploadResearchTab(),
@@ -63,11 +70,15 @@ class _AdminPageState extends State<AdminPage>
               subtitle: Text(
                 '${u.email}\nStatus: ${u.isVip ? "VIP" : " Reguler"}',
               ),
-              isThreeLine: true,
+              isThreeLine:
+                  true, //dasar nya listtile cuma dua baris karena subtile kepanjangan jadi menyesuaikan panjang subtilele
               trailing: Switch(
                 value: u.isVip,
                 onChanged: (value) async {
-                  await authService.value.setUserVipStatus(u.uid, value);
+                  await authService.value.setUserVipStatus(
+                    u.uid,
+                    value,
+                  ); //fungsinaya ada di auth servis
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Status VIP ${u.nama} diubah jadi $value'),
@@ -91,7 +102,8 @@ class _AdminPageState extends State<AdminPage>
     final tpCtrl = TextEditingController();
     final slCtrl = TextEditingController();
     final entryCtrl = TextEditingController();
-    bool isVipOnly = false;
+    bool isVipOnly =
+        false; // memberikan flag ke research ini ketika pengecekan ketika modul dan user true research akan ke lock
 
     return StatefulBuilder(
       builder: (context, setState) {
@@ -135,7 +147,7 @@ class _AdminPageState extends State<AdminPage>
               Row(
                 spacing: 10,
                 children: [
-                  Container(
+                  SizedBox(
                     width: 100,
                     child: TextField(
                       controller: tpCtrl,
@@ -144,14 +156,14 @@ class _AdminPageState extends State<AdminPage>
                       ),
                     ),
                   ),
-                  Container(
+                  SizedBox(
                     width: 100,
                     child: TextField(
                       controller: entryCtrl,
                       decoration: const InputDecoration(labelText: 'Entry'),
                     ),
                   ),
-                  Container(
+                  SizedBox(
                     width: 100,
                     child: TextField(
                       controller: slCtrl,
@@ -177,6 +189,9 @@ class _AdminPageState extends State<AdminPage>
                 onPressed: () async {
                   if (tickerCtrl.text.isEmpty || judulCtrl.text.isEmpty) return;
                   await authService.value.uploadResearch(
+                    //alurnya : controller dapat data dari user kemudian di kirim ke upload research di auth service
+                    //kemudian menjalankan uplaoad reserach yang mengirim data ini ke server
+                    //dan pada kolom ini kita megisi required dangan controller kita
                     judul: judulCtrl.text,
                     ticker: tickerCtrl.text,
                     emiten: emitenCtrl.text,
@@ -189,7 +204,7 @@ class _AdminPageState extends State<AdminPage>
                   );
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Riser berhasil di Upload ke FireStore!'),
+                      content: Text('Riset berhasil di Upload ke FireStore!'),
                     ),
                   );
                   tickerCtrl.clear();
@@ -197,6 +212,9 @@ class _AdminPageState extends State<AdminPage>
                   judulCtrl.clear();
                   descCtrl.clear();
                   imageCtrl.clear();
+                  tpCtrl.clear();
+                  slCtrl.clear();
+                  entryCtrl.clear();
                 },
               ),
             ],
@@ -210,9 +228,11 @@ class _AdminPageState extends State<AdminPage>
     final judulCtrl = TextEditingController();
     final videoCtrl = TextEditingController();
     String level = 'pemula';
-    bool isVipOnly = false;
+    bool isVipOnly = false; //sama car kerjanya dengan yang di atas
 
     return StatefulBuilder(
+      //kalo statelles tapi mau layar nya bisa berubah pakai setstate bisa pakai ini .
+      // kalo di pisah state kode nya akan panjang makanya pakai statefull builder biar lebih ringkas
       builder: (context, setTabState) {
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -231,14 +251,17 @@ class _AdminPageState extends State<AdminPage>
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: level,
+                initialValue:
+                    level, //nilai yang muncul ketika widget pertama kali di buat.
                 decoration: const InputDecoration(labelText: 'Level Modul'),
                 items: const [
                   DropdownMenuItem(value: 'pemula', child: Text('Pemula')),
                   DropdownMenuItem(value: 'menengah', child: Text('Menengah')),
                   DropdownMenuItem(value: 'lanjutan', child: Text('Lanjutan')),
                 ],
-                onChanged: (value) => setTabState(() => level = value!),
+                onChanged: (value) => setTabState(
+                  () => level = value!,
+                ), //karena pakai string biasa bukan nullabel jadi haru pake null asertion (!)
               ),
               const SizedBox(height: 12),
               SwitchListTile(

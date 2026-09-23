@@ -3,7 +3,7 @@ import 'package:flutter_application_2/data/notifier.dart';
 import 'package:flutter_application_2/views/pages/login_page.dart';
 import 'package:flutter_application_2/views/pages/register_page.dart';
 import 'package:flutter_application_2/views/pages/terms_services_page.dart';
-import 'package:flutter_application_2/views/widgets/hero_widget.dart';
+import 'package:flutter_application_2/views/widgets/simple_widget/hero_widget.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});

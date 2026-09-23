@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/services/auth_services.dart';
-import 'package:flutter_application_2/views/pages/reset_password_page.dart';
+import 'package:flutter_application_2/services/reset_password_page.dart';
 import 'package:flutter_application_2/views/widget_tree.dart';
 import 'package:lottie/lottie.dart';
 
@@ -16,6 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController controllerPw = TextEditingController();
   final FocusNode passwordFocusNode = FocusNode();
   String pesanError = '';
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -26,10 +27,18 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> loginUser() async {
+    setState(
+      () => isLoading = true,
+    ); //di ubah true biar loading muncul dan tombol ngk bisa di ketik
     String? error = await authService.value.signIn(
-      email: controllerEmail.text.trim(),
+      email: controllerEmail.text
+          .trim(), //trim biar ngk ada space sebelum kalimant
       password: controllerPw.text.trim(),
     );
+    setState(() {
+      isLoading =
+          false; //jadi false dan langsung ke navigator push kalo ngk ada error
+    });
     if (!mounted) return;
     if (error != null) {
       setState(() {
@@ -140,12 +149,20 @@ class _LoginPageState extends State<LoginPage> {
                       SizedBox(height: 40),
                       FilledButton(
                         onPressed: () {
-                          loginUser();
+                          isLoading ? null : loginUser();
                         },
                         style: FilledButton.styleFrom(
                           minimumSize: Size(double.infinity, 40.0),
                         ),
-                        child: Text('login'),
+                        child: isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.grey,
+                                ),
+                              )
+                            : Text('login'),
                       ),
                       TextButton(
                         onPressed: () {

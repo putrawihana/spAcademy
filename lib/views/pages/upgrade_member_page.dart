@@ -162,6 +162,7 @@ class UpgradeMemberPage extends StatelessWidget {
                     ),
                     Column(
                       children: benefits.map((benefit) {
+                        //looping mengunakan map yang megluarkan data mentah berupa listile
                         return ListTile(
                           leading: Icon(
                             Icons.check_circle,
@@ -170,7 +171,7 @@ class UpgradeMemberPage extends StatelessWidget {
                           ),
                           title: Text(benefit, style: TextStyle(fontSize: 13)),
                         );
-                      }).toList(),
+                      }).toList(), //harus di ubah jadi list agar data mentah bisa di tangkap oleh column
                     ),
                     SizedBox(height: 20),
                     GestureDetector(
@@ -181,7 +182,8 @@ class UpgradeMemberPage extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           gradient: RadialGradient(
-                            center: Alignment.center,
+                            //kalo pakai gradient jangan pakai color lagi di luar
+                            center: Alignment.center, //linear, swiptgradient
                             radius: 2.0,
                             colors: [
                               Color.fromARGB(255, 246, 195, 107),

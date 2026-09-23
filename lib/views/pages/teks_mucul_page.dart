@@ -9,16 +9,17 @@ class TypingTextPage extends StatefulWidget {
 }
 
 class _TypingTextPageState extends State<TypingTextPage> {
-  // Teks lengkap yang ingin ditampilkan
   final String fullText =
       "I want one ticket out of your heavy gaze\n"
       "I want one ticket off your carousel\n"
       "but you should know that I die slow.";
 
-  // Teks yang akan tampil di layar (mulai dari kosong)
   String displayedText = "";
   int currentIndex = 0;
   Timer? _timer;
+
+  // Penanda arah: true = sedang mengetik (maju), false = sedang menghapus (mundur)
+  bool isTypingForward = true;
 
   @override
   void initState() {
@@ -27,22 +28,36 @@ class _TypingTextPageState extends State<TypingTextPage> {
   }
 
   void startTypingEffect() {
-    // Timer akan berjalan tiap beberapa milidetik untuk menambah 1 huruf
     _timer = Timer.periodic(const Duration(milliseconds: 70), (timer) {
-      if (currentIndex < fullText.length) {
-        setState(() {
-          currentIndex++;
-          displayedText = fullText.substring(0, currentIndex);
-        });
-      } else {
-        _timer?.cancel(); // Berhenti kalau teks sudah habis
-      }
+      setState(() {
+        if (isTypingForward) {
+          // KONDISI 1: Sedang mengetik maju
+          if (currentIndex < fullText.length) {
+            currentIndex++;
+            displayedText = fullText.substring(0, currentIndex);
+          } else {
+            // Kalau sudah penuh, tunggu sebentar (atau langsung ubah arah)
+            // lalu mulai proses menghapus mundur
+            isTypingForward = false;
+          }
+        } else {
+          // KONDISI 2: Sedang menghapus mundur
+          if (currentIndex > 0) {
+            currentIndex -= 2;
+            if (currentIndex < 0) currentIndex = 0;
+            displayedText = fullText.substring(0, currentIndex);
+          } else {
+            // Kalau sudah habis (kembali ke 0), ubah arah lagi ke depan
+            isTypingForward = true;
+          }
+        }
+      });
     });
   }
 
   @override
   void dispose() {
-    _timer?.cancel(); // Jangan lupa matikan timer saat halaman ditutup
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -60,7 +75,7 @@ class _TypingTextPageState extends State<TypingTextPage> {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 18,
-              fontFamily: 'monospace', // Agar mirip teks terminal/kode
+              fontFamily: 'monospace',
             ),
           ),
         ),

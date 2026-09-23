@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/data/constans.dart';
 import 'package:intl/intl.dart';
 
 class BacaResearchPage extends StatefulWidget {
-  final Map<String, dynamic> data;
+  final Map<String, dynamic> data; //membaca berdasarkan riset yang di click
 
   BacaResearchPage({super.key, required this.data});
 
@@ -23,8 +24,10 @@ class _BacaResearchPageState extends State<BacaResearchPage> {
     final String entryPoint = data['entryPoint'] ?? '';
     final String stopLoss = data['stopLoss'] ?? '';
     final List<String> paragrafList = deskripsi.split('\n');
+    //pakai split untuk memecahkan jadi beberapa paragraph
     DateTime tanggal = DateTime.now();
     if (data['tanggal'] != null && data['tanggal'] is Timestamp) {
+      // timestap format yang di gunakan di firestore
       tanggal = (data['tanggal'] as Timestamp).toDate();
     }
 
@@ -39,14 +42,16 @@ class _BacaResearchPageState extends State<BacaResearchPage> {
                 spacing: 4,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('RETURN SHOWCASE'),
-                      Text(DateFormat('dd MMMM yyyy', 'id_ID').format(tanggal)),
-                    ],
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      DateFormat('dd MMMM yyyy', 'id_ID').format(tanggal),
+                    ),
                   ),
-                  Text(judul),
+                  Text(
+                    judul,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  ),
                   SizedBox(height: 15),
                   if (imageUrl.isNotEmpty)
                     Container(
@@ -56,8 +61,9 @@ class _BacaResearchPageState extends State<BacaResearchPage> {
                     ),
                   if (takeProfit.isNotEmpty &&
                       stopLoss.isNotEmpty &&
-                      entryPoint.isNotEmpty)
+                      entryPoint.isNotEmpty) ...[
                     Container(
+                      margin: EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
                         color: Color(0xFF0F172A),
@@ -67,12 +73,9 @@ class _BacaResearchPageState extends State<BacaResearchPage> {
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('setup Treding plan'),
-                                Container(child: Text('Swing 4 Bulan')),
-                              ],
+                            Text(
+                              'setup Treding plan',
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             SizedBox(height: 10),
                             Row(
@@ -101,7 +104,9 @@ class _BacaResearchPageState extends State<BacaResearchPage> {
                                       ),
                                       SizedBox(height: 5),
                                       Text(
-                                        '${data['entryPoint'] ?? '320'}',
+                                        KTextStyle.formatRibuan(
+                                          '${data['entryPoint'] ?? '320'}',
+                                        ),
                                         style: TextStyle(color: Colors.green),
                                       ),
                                     ],
@@ -130,7 +135,9 @@ class _BacaResearchPageState extends State<BacaResearchPage> {
                                       ),
                                       SizedBox(height: 5),
                                       Text(
-                                        '${data['takeProfit'] ?? '900'}',
+                                        KTextStyle.formatRibuan(
+                                          '${data['takeProfit'] ?? '900'}',
+                                        ),
                                         style: TextStyle(color: Colors.green),
                                       ),
                                     ],
@@ -159,7 +166,9 @@ class _BacaResearchPageState extends State<BacaResearchPage> {
                                       ),
                                       SizedBox(height: 5),
                                       Text(
-                                        '${data['stopLoss'] ?? '80'}',
+                                        KTextStyle.formatRibuan(
+                                          '${data['stopLoss'] ?? '80'}',
+                                        ),
                                         style: TextStyle(color: Colors.red),
                                       ),
                                     ],
@@ -171,16 +180,27 @@ class _BacaResearchPageState extends State<BacaResearchPage> {
                         ),
                       ),
                     ),
-                  Text('Tesis Investatasi & Rationale'),
+                    Text(
+                      'Tesis Investatasi',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                  //... ini namanya spread oprator
+                  //jadi ini perlu karena column cuma nerima List<Widget>
+                  //dan paragraf beruapa List<String> makanya harus di ubah menjadi widget dengan cara loop,
+                  // setelah di loop harus di keluarkan satu satu pakai spread operator kalo ngk dia masih satu kesatuaan
                   ...paragrafList.map((paragraf) {
                     if (paragraf.trim().isEmpty) {
-                      return const SizedBox(height: 10);
+                      return const SizedBox(height: 2);
                     }
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
                         paragraf,
-                        style: const TextStyle(fontSize: 14, height: 1.5),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          height: 1.5,
+                        ), //heigt jarak atara baris jadi enak di baca
                       ),
                     );
                   }),
