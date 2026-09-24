@@ -240,7 +240,9 @@ class _AdminPageState extends State<AdminPage>
             children: [
               TextField(
                 controller: judulCtrl,
-                decoration: const InputDecoration(labelText: 'Judul Modul'),
+                decoration: const InputDecoration(
+                  labelText: 'Judul Modul (disarankan 3 kata)',
+                ),
               ),
               const SizedBox(height: 12),
               TextField(

@@ -5,7 +5,7 @@ import 'package:flutter_application_2/views/pages/modul_video/modul_page.dart';
 import 'package:flutter_application_2/views/pages/profile/profil_page.dart';
 import 'package:flutter_application_2/views/pages/reseach/research_page.dart';
 
-import 'widgets/navbar_widget.dart';
+import 'widgets/simple_widget/navbar_widget.dart';
 
 class WidgetTree extends StatefulWidget {
   WidgetTree({super.key});
@@ -15,9 +15,12 @@ class WidgetTree extends StatefulWidget {
 }
 
 class _WidgetTreeState extends State<WidgetTree> {
+  //beda list pages di dalam build atau luar build
+  //kalo di dalam akan terus memperbarui karena terus memperbarui ketiga state tapi boros memori
+  //sedangak di luar sebaliknya dari posisi di dalam
+  List<Widget> pages = [HomePage(), ModulPage(), ResearchPage()];
   @override
   Widget build(BuildContext context) {
-    List<Widget> pages = [HomePage(), ModulPage(), ResearchPage()];
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();

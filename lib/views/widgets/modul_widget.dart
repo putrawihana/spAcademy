@@ -339,7 +339,7 @@ class _ModulWidgetState extends State<ModulWidget> {
                                       ],
                                     ),
                                     Container(
-                                      padding: const EdgeInsets.all(3),
+                                      padding: const EdgeInsets.all(6),
                                       decoration: BoxDecoration(
                                         border: Border.all(
                                           color: const Color(0xFF10B981),
@@ -366,7 +366,7 @@ class _ModulWidgetState extends State<ModulWidget> {
                                           Text(
                                             '$jumlahSelesai/$totalModul',
                                             style: const TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 12,
                                               fontWeight: FontWeight.bold,
                                               color: Color(0xFF10B981),
                                             ),
@@ -374,7 +374,7 @@ class _ModulWidgetState extends State<ModulWidget> {
                                           const Text(
                                             'Selesai',
                                             style: TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 14,
                                               fontWeight: FontWeight.bold,
                                               color: Color(0xFF10B981),
                                             ),

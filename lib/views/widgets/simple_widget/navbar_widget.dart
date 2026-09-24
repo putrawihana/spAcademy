@@ -19,7 +19,8 @@ class NavbarWidget extends StatelessWidget {
             ),
           ],
           onDestinationSelected: (int value) {
-            selectedPageNotifier.value = value;
+            selectedPageNotifier.value =
+                value; //ini menganti value yang ada di notivier
           },
           selectedIndex: selectedPage,
         );

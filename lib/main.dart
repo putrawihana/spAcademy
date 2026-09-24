@@ -10,9 +10,13 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  //menayalakan mesin flutter biasanay di gunakana kalo pakai plugin
+  //biasanya ini ngk perlu di tulis eksplisit karena udh di tulis flutter
+  //tapi karena di sini async harus di tulis
 
+  //ini sebagai penghubung ke firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await initializeDateFormatting('id_ID', null);
+  await initializeDateFormatting('id_ID', null); //format tanggal
   runApp(const MyApp());
 }
 
@@ -42,19 +46,25 @@ class _MyAppState extends State<MyApp> {
   }
 
   void initsThemeMode() async {
+    //menyimpan defuld tampilan ke hp jadi tiap user beda
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final bool? repeat = prefs.getBool(KConstans.themeModeKey);
     isDarkNotifier.value = repeat ?? false;
   }
 
+  //kenapa ngk langsung runApp(MeterialApp) sebenarnaya bisa aja tapi kalo membuat  logic
+  //kita harus buat pembungkus untuk menarapkan logicnya
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: isDarkNotifier,
       builder: (context, isDark, child) {
         return MaterialApp(
+          //widget flutter untuk menyiapkan semuanaya
           initialRoute: '/',
-          routes: {'/welcome': (context) => WelcomePage()},
+          routes: {
+            '/welcome': (context) => WelcomePage(),
+          }, //kamus untuk navigator
           scrollBehavior: NonStreach(),
           debugShowCheckedModeBanner: false,
           theme: ThemeData(

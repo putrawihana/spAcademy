@@ -39,11 +39,11 @@ class _ResearchPageState extends State<ResearchPage> {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
-                padding: EdgeInsets.all(16),
+                padding: EdgeInsets.only(left: 16, right: 16, bottom: 16),
                 child: ResearchWidget(searchBar: true),
               ),
             ),

@@ -10,14 +10,18 @@ import 'package:intl/intl.dart';
 class ResearchWidget extends StatefulWidget {
   final int? jumlahResearch;
   final bool? searchBar;
-  const ResearchWidget({super.key, this.jumlahResearch, this.searchBar});
+  const ResearchWidget({
+    super.key,
+    this.jumlahResearch,
+    this.searchBar = false,
+  });
 
   @override
   State<ResearchWidget> createState() => _ResearchWidgetState();
 }
 
 class _ResearchWidgetState extends State<ResearchWidget> {
-  String ketikan = '';
+  String ketikanPencariaan = '';
   final TextEditingController searchController = TextEditingController();
 
   void confirmedDelete(String docId, String judul) {
@@ -37,7 +41,9 @@ class _ResearchWidgetState extends State<ResearchWidget> {
               await authService.value.deleteResearche(docId);
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('BeRH4siL hApu5 research')),
+                  const SnackBar(
+                    content: Text('Berhasil Menghapus Research Ini'),
+                  ),
                 );
               }
             },
@@ -55,23 +61,23 @@ class _ResearchWidgetState extends State<ResearchWidget> {
       builder: (context, isDark, child) {
         return Column(
           children: [
-            if (widget.searchBar == true) ...[
+            if (widget.searchBar!) ...[
               TextField(
                 controller: searchController,
                 onChanged: (value) {
                   setState(() {
-                    ketikan = value;
+                    ketikanPencariaan = value;
                   });
                 },
                 decoration: InputDecoration(
                   hintText: 'Cari research ......',
                   prefixIcon: Icon(Icons.search),
-                  suffixIcon: ketikan.isNotEmpty
+                  suffixIcon: ketikanPencariaan.isNotEmpty
                       ? IconButton(
                           onPressed: () {
                             searchController.clear();
                             setState(() {
-                              ketikan = '';
+                              ketikanPencariaan = '';
                             });
                           },
                           icon: Icon(Icons.clear),
@@ -99,7 +105,7 @@ class _ResearchWidgetState extends State<ResearchWidget> {
                         padding: const EdgeInsets.all(20),
                         child: Center(
                           child: Text(
-                            'Belum ada riser yang dipublikasi.',
+                            'Belum ada Riset yang dipublikasi.',
                             style: TextStyle(
                               color: isDark ? Colors.white70 : Colors.black54,
                             ),
@@ -111,14 +117,19 @@ class _ResearchWidgetState extends State<ResearchWidget> {
                     if (widget.jumlahResearch != null) {
                       docs = docs.take(widget.jumlahResearch!).toList();
                     }
-
-                    final SearchResearch = docs.where((doc) {
-                      final data = doc.data() as Map<String, dynamic>;
-                      final judul = (data['judul'] ?? '')
-                          .toString()
-                          .toLowerCase();
-                      return judul.contains(ketikan.toLowerCase());
-                    }).toList();
+                    final query = ketikanPencariaan.trim().toLowerCase();
+                    //cek dulu apakan ketikan ada kalo ngk ini ngk jalan
+                    final SearchResearch = query.isEmpty
+                        ? docs
+                        : docs.where((doc) {
+                            final data = doc.data() as Map<String, dynamic>;
+                            final judul = (data['judul'] ?? '')
+                                .toString()
+                                .toLowerCase();
+                            return judul.contains(
+                              ketikanPencariaan.toLowerCase(),
+                            );
+                          }).toList();
 
                     return Column(
                       children: [
@@ -314,7 +325,8 @@ class _ResearchWidgetState extends State<ResearchWidget> {
                                               MaterialPageRoute(
                                                 builder: (context) {
                                                   return BacaResearchPage(
-                                                    data: data,
+                                                    data:
+                                                        data, //data yang di kirim bedasarkna index
                                                   );
                                                 },
                                               ),
